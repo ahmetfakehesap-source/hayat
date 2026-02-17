@@ -1,0 +1,114 @@
+.investment-page {
+    animation: fadeIn 0.3s ease;
+}
+
+.investment-stats {
+    margin-bottom: 2rem;
+}
+
+.stat-value.profit {
+    color: var(--color-success);
+}
+
+.stat-value.loss {
+    color: var(--color-danger);
+}
+
+/* Portfolio Distribution */
+.portfolio-distribution {
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.portfolio-distribution h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+}
+
+.distribution-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.distribution-item {
+    padding: 1rem;
+    background: var(--bg-tertiary);
+    border-radius: var(--border-radius-sm);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.distribution-label {
+    font-size: 0.938rem;
+    color: var(--text-secondary);
+}
+
+.distribution-value {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Investments Table */
+.investments-table {
+    overflow-x: auto;
+}
+
+.investment-notes {
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+    margin-top: 0.25rem;
+}
+
+.type-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.625rem;
+    border-radius: 999px;
+    font-weight: 500;
+}
+
+.type-badge.stock {
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--color-primary);
+}
+
+.type-badge.crypto {
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--color-warning);
+}
+
+.type-badge.fund {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--color-success);
+}
+
+.type-badge.other {
+    background: rgba(100, 116, 139, 0.1);
+    color: var(--text-tertiary);
+}
+
+.table td.profit {
+    color: var(--color-success);
+    font-weight: 600;
+}
+
+.table td.loss {
+    color: var(--color-danger);
+    font-weight: 600;
+}
+
+.table-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .distribution-grid {
+        grid-template-columns: 1fr;
+    }
+}
