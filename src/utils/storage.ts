@@ -5,14 +5,14 @@ const SETTINGS_KEY = 'lifeos_settings';
 
 const defaultSettings: Settings = {
     theme: 'light',
-    dailyCalorieGoal: 2000,
-    dailyProteinGoal: 150,
-    dailyCarbsGoal: 200,
-    dailyFatGoal: 65,
-    yearlyBookGoal: 12,
-    weeklyWorkoutGoal: 3,
-    workoutDays: [], // No specific days by default
-    monthlyWorkoutGoal: 12,
+    dailyCalorieGoal: 1700, // Ramadan mode
+    dailyProteinGoal: 120, // Increased protein focus
+    dailyCarbsGoal: 150,
+    dailyFatGoal: 50,
+    yearlyBookGoal: 50, // Approx 1 book/week or based on 10 pages/day
+    weeklyWorkoutGoal: 2, // 2 days/week walking
+    workoutDays: [], // Flexible
+    monthlyWorkoutGoal: 8,
 };
 
 const defaultData: AppData = {
