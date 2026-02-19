@@ -24,7 +24,7 @@ const Health: React.FC = () => {
     const [calProtein, setCalProtein] = useState('');
     const [calCarbs, setCalCarbs] = useState('');
     const [calFat, setCalFat] = useState('');
-    const [showCalExpand, setShowCalExpand] = useState(false);
+
 
     // Inline workout form state
     const [wkType, setWkType] = useState('');
@@ -65,7 +65,6 @@ const Health: React.FC = () => {
         setCalProtein('');
         setCalCarbs('');
         setCalFat('');
-        setShowCalExpand(false);
     };
 
     // Edit calorie (modal)
@@ -501,27 +500,20 @@ const Health: React.FC = () => {
                             </div>
                             <button className="btn-add" onClick={handleAddCalorieInline}>➕ Ekle</button>
                         </div>
-                        <button className="expand-toggle" onClick={() => setShowCalExpand(!showCalExpand)}>
-                            {showCalExpand ? '▲ Gizle' : '▼ Makrolar'}
-                        </button>
-                        {showCalExpand && (
-                            <div className="expand-area">
-                                <div className="inline-form-row">
-                                    <div className="inline-field field-sm">
-                                        <label>🥩 Protein (g)</label>
-                                        <input type="number" placeholder="0" value={calProtein} onChange={(e) => setCalProtein(e.target.value)} />
-                                    </div>
-                                    <div className="inline-field field-sm">
-                                        <label>🍞 Karb (g)</label>
-                                        <input type="number" placeholder="0" value={calCarbs} onChange={(e) => setCalCarbs(e.target.value)} />
-                                    </div>
-                                    <div className="inline-field field-sm">
-                                        <label>🧈 Yağ (g)</label>
-                                        <input type="number" placeholder="0" value={calFat} onChange={(e) => setCalFat(e.target.value)} />
-                                    </div>
-                                </div>
+                        <div className="inline-form-row">
+                            <div className="inline-field field-sm">
+                                <label>🥩 Protein (g)</label>
+                                <input type="number" placeholder="0" value={calProtein} onChange={(e) => setCalProtein(e.target.value)} />
                             </div>
-                        )}
+                            <div className="inline-field field-sm">
+                                <label>🍞 Karb (g)</label>
+                                <input type="number" placeholder="0" value={calCarbs} onChange={(e) => setCalCarbs(e.target.value)} />
+                            </div>
+                            <div className="inline-field field-sm">
+                                <label>🧈 Yağ (g)</label>
+                                <input type="number" placeholder="0" value={calFat} onChange={(e) => setCalFat(e.target.value)} />
+                            </div>
+                        </div>
                     </div>
 
                     {/* Macros */}
