@@ -6,32 +6,49 @@ import './Journal.css';
 
 const Journal: React.FC = () => {
     const { data, updateData } = useApp();
-    const [showModal, setShowModal] = useState(false);
     const [editingEntry, setEditingEntry] = useState<JournalEntry | null>(null);
+    const [showEditModal, setShowEditModal] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
 
-    const handleAddEntry = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        const formData = new FormData(e.currentTarget);
+    // Inline form state
+    const [mood, setMood] = useState<JournalEntry['mood']>('neutral');
+    const [content, setContent] = useState('');
+    const [tags, setTags] = useState('');
+
+    const handleAddInline = () => {
+        if (!content.trim()) return;
 
         const newEntry: JournalEntry = {
-            id: editingEntry?.id || generateId(),
+            id: generateId(),
+            date: new Date().toISOString().split('T')[0],
+            content: content.trim(),
+            mood: mood,
+            tags: tags.split(',').map(t => t.trim()).filter(t => t),
+        };
+
+        updateData({ journalEntries: [...data.journalEntries, newEntry] });
+        setContent('');
+        setTags('');
+        setMood('neutral');
+    };
+
+    const handleEditEntry = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        if (!editingEntry) return;
+        const formData = new FormData(e.currentTarget);
+
+        const updatedEntry: JournalEntry = {
+            ...editingEntry,
             date: formData.get('date') as string,
             content: formData.get('content') as string,
             mood: formData.get('mood') as JournalEntry['mood'],
             tags: (formData.get('tags') as string).split(',').map(t => t.trim()).filter(t => t),
         };
 
-        if (editingEntry) {
-            updateData({ journalEntries: data.journalEntries.map((e) => (e.id === editingEntry.id ? newEntry : e)) });
-        } else {
-            updateData({ journalEntries: [...data.journalEntries, newEntry] });
-        }
-
-        setShowModal(false);
+        updateData({ journalEntries: data.journalEntries.map((e) => (e.id === editingEntry.id ? updatedEntry : e)) });
+        setShowEditModal(false);
         setEditingEntry(null);
-        e.currentTarget.reset();
     };
 
     const handleDeleteEntry = (id: string) => {
@@ -41,7 +58,7 @@ const Journal: React.FC = () => {
     };
 
     const handleExport = () => {
-        const content = data.journalEntries
+        const contentExport = data.journalEntries
             .sort((a, b) => a.date.localeCompare(b.date))
             .map((entry) => {
                 const moodEmoji = {
@@ -56,7 +73,7 @@ const Journal: React.FC = () => {
             })
             .join('\n');
 
-        downloadFile(content, `gunlugum-${new Date().toISOString().split('T')[0]}.txt`);
+        downloadFile(contentExport, `gunlugum-${new Date().toISOString().split('T')[0]}.txt`);
     };
 
     const filteredEntries = data.journalEntries
@@ -84,6 +101,14 @@ const Journal: React.FC = () => {
     };
 
     const stats = moodStats();
+
+    const moods: { key: JournalEntry['mood']; emoji: string; label: string }[] = [
+        { key: 'very-happy', emoji: '😄', label: 'Çok Mutlu' },
+        { key: 'happy', emoji: '😊', label: 'Mutlu' },
+        { key: 'neutral', emoji: '😐', label: 'Normal' },
+        { key: 'sad', emoji: '😢', label: 'Üzgün' },
+        { key: 'very-sad', emoji: '😭', label: 'Çok Üzgün' },
+    ];
 
     return (
         <div className="journal-page">
@@ -121,6 +146,49 @@ const Journal: React.FC = () => {
                 </div>
             </div>
 
+            {/* Inline Quick-Add Journal */}
+            <div className="inline-form">
+                <div className="inline-form-row">
+                    <div className="inline-field" style={{ flex: '0 0 auto' }}>
+                        <label>Ruh Hali</label>
+                        <div className="mood-selector-inline">
+                            {moods.map(({ key, emoji }) => (
+                                <button
+                                    key={key}
+                                    type="button"
+                                    className={`mood-btn ${mood === key ? 'active' : ''}`}
+                                    onClick={() => setMood(key)}
+                                    title={key}
+                                >
+                                    {emoji}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                    <div className="inline-field">
+                        <label>Etiketler</label>
+                        <input
+                            type="text"
+                            placeholder="iş, spor, aile..."
+                            value={tags}
+                            onChange={(e) => setTags(e.target.value)}
+                        />
+                    </div>
+                    <button className="btn-add" onClick={handleAddInline}>➕ Kaydet</button>
+                </div>
+                <div className="inline-form-row" style={{ marginTop: '0.5rem' }}>
+                    <div className="inline-field">
+                        <label>Günlük</label>
+                        <textarea
+                            placeholder="Bugün neler oldu?..."
+                            value={content}
+                            onChange={(e) => setContent(e.target.value)}
+                            style={{ minHeight: '80px' }}
+                        />
+                    </div>
+                </div>
+            </div>
+
             <div className="section-header">
                 <div className="controls">
                     <input
@@ -140,9 +208,6 @@ const Journal: React.FC = () => {
                 <div className="header-actions">
                     <button className="btn btn-secondary" onClick={handleExport}>
                         💾 Dışa Aktar
-                    </button>
-                    <button className="btn btn-primary" onClick={() => { setEditingEntry(null); setShowModal(true); }}>
-                        ➕ Günlük Yaz
                     </button>
                 </div>
             </div>
@@ -167,7 +232,7 @@ const Journal: React.FC = () => {
                                     </span>
                                 </div>
                                 <div className="entry-actions">
-                                    <button className="btn-icon" onClick={() => { setEditingEntry(entry); setShowModal(true); }}>
+                                    <button className="btn-icon" onClick={() => { setEditingEntry(entry); setShowEditModal(true); }}>
                                         ✏️
                                     </button>
                                     <button className="btn-icon delete" onClick={() => handleDeleteEntry(entry.id)}>
@@ -188,28 +253,22 @@ const Journal: React.FC = () => {
                 )}
             </div>
 
-            {/* Modal */}
-            {showModal && (
-                <div className="modal-overlay" onClick={() => setShowModal(false)}>
+            {/* Edit Modal */}
+            {showEditModal && editingEntry && (
+                <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
                     <div className="modal large" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
-                            <h2 className="modal-title">{editingEntry ? 'Günlük Düzenle' : 'Günlük Yaz'}</h2>
-                            <button className="modal-close" onClick={() => setShowModal(false)}>×</button>
+                            <h2 className="modal-title">Günlük Düzenle</h2>
+                            <button className="modal-close" onClick={() => setShowEditModal(false)}>×</button>
                         </div>
-                        <form onSubmit={handleAddEntry}>
+                        <form onSubmit={handleEditEntry}>
                             <div className="input-group">
                                 <label>Tarih *</label>
-                                <input
-                                    name="date"
-                                    type="date"
-                                    className="input"
-                                    defaultValue={editingEntry?.date || new Date().toISOString().split('T')[0]}
-                                    required
-                                />
+                                <input name="date" type="date" className="input" defaultValue={editingEntry.date} required />
                             </div>
                             <div className="input-group">
                                 <label>Ruh Hali *</label>
-                                <select name="mood" className="select" defaultValue={editingEntry?.mood || 'neutral'} required>
+                                <select name="mood" className="select" defaultValue={editingEntry.mood} required>
                                     <option value="very-happy">😄 Çok Mutlu</option>
                                     <option value="happy">😊 Mutlu</option>
                                     <option value="neutral">😐 Normal</option>
@@ -219,25 +278,13 @@ const Journal: React.FC = () => {
                             </div>
                             <div className="input-group">
                                 <label>Günlük *</label>
-                                <textarea
-                                    name="content"
-                                    className="textarea journal-textarea"
-                                    defaultValue={editingEntry?.content}
-                                    placeholder="Bugün neler oldu?..."
-                                    required
-                                ></textarea>
+                                <textarea name="content" className="textarea journal-textarea" defaultValue={editingEntry.content} required></textarea>
                             </div>
                             <div className="input-group">
                                 <label>Etiketler (virgülle ayırın)</label>
-                                <input
-                                    name="tags"
-                                    type="text"
-                                    className="input"
-                                    placeholder="Örn: iş, spor, aile"
-                                    defaultValue={editingEntry?.tags?.join(', ')}
-                                />
+                                <input name="tags" type="text" className="input" defaultValue={editingEntry.tags?.join(', ')} />
                             </div>
-                            <button type="submit" className="btn btn-primary">{editingEntry ? 'Güncelle' : 'Kaydet'}</button>
+                            <button type="submit" className="btn btn-primary">Güncelle</button>
                         </form>
                     </div>
                 </div>

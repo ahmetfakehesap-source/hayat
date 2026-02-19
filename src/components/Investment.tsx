@@ -6,15 +6,47 @@ import './Investment.css';
 
 const InvestmentPage: React.FC = () => {
     const { data, updateData } = useApp();
-    const [showModal, setShowModal] = useState(false);
     const [editingInvestment, setEditingInvestment] = useState<Investment | null>(null);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [showExpand, setShowExpand] = useState(false);
 
-    const handleAddInvestment = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        const formData = new FormData(e.currentTarget);
+    // Inline form state
+    const [asset, setAsset] = useState('');
+    const [invType, setInvType] = useState<Investment['type']>('stock');
+    const [quantity, setQuantity] = useState('');
+    const [buyPrice, setBuyPrice] = useState('');
+    const [currentPrice, setCurrentPrice] = useState('');
+    const [notes, setNotes] = useState('');
+
+    const handleAddInline = () => {
+        if (!asset.trim() || !quantity || !buyPrice || !currentPrice) return;
 
         const newInvestment: Investment = {
-            id: editingInvestment?.id || generateId(),
+            id: generateId(),
+            asset: asset.trim(),
+            type: invType,
+            quantity: Number(quantity),
+            buyPrice: Number(buyPrice),
+            currentPrice: Number(currentPrice),
+            notes: notes || undefined,
+        };
+
+        updateData({ investments: [...data.investments, newInvestment] });
+        setAsset('');
+        setQuantity('');
+        setBuyPrice('');
+        setCurrentPrice('');
+        setNotes('');
+        setShowExpand(false);
+    };
+
+    const handleEditInvestment = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        if (!editingInvestment) return;
+        const formData = new FormData(e.currentTarget);
+
+        const updatedInv: Investment = {
+            ...editingInvestment,
             asset: formData.get('asset') as string,
             type: formData.get('type') as Investment['type'],
             quantity: Number(formData.get('quantity')),
@@ -23,15 +55,9 @@ const InvestmentPage: React.FC = () => {
             notes: formData.get('notes') as string || undefined,
         };
 
-        if (editingInvestment) {
-            updateData({ investments: data.investments.map((i) => (i.id === editingInvestment.id ? newInvestment : i)) });
-        } else {
-            updateData({ investments: [...data.investments, newInvestment] });
-        }
-
-        setShowModal(false);
+        updateData({ investments: data.investments.map((i) => (i.id === editingInvestment.id ? updatedInv : i)) });
+        setShowEditModal(false);
         setEditingInvestment(null);
-        e.currentTarget.reset();
     };
 
     const handleDeleteInvestment = (id: string) => {
@@ -114,11 +140,55 @@ const InvestmentPage: React.FC = () => {
                 </div>
             </div>
 
-            <div className="section-header">
-                <h2>Yatırımlar ({data.investments.length})</h2>
-                <button className="btn btn-primary" onClick={() => { setEditingInvestment(null); setShowModal(true); }}>
-                    ➕ Yatırım Ekle
+            {/* Inline Quick-Add */}
+            <div className="inline-form">
+                <div className="inline-form-row">
+                    <div className="inline-field">
+                        <label>Varlık</label>
+                        <input
+                            type="text"
+                            placeholder="AAPL, BTC..."
+                            value={asset}
+                            onChange={(e) => setAsset(e.target.value)}
+                            onKeyDown={(e) => { if (e.key === 'Enter') handleAddInline(); }}
+                        />
+                    </div>
+                    <div className="inline-field field-select">
+                        <label>Tür</label>
+                        <select value={invType} onChange={(e) => setInvType(e.target.value as Investment['type'])}>
+                            <option value="stock">📈 Hisse</option>
+                            <option value="crypto">₿ Kripto</option>
+                            <option value="fund">📊 Fon</option>
+                            <option value="other">💼 Diğer</option>
+                        </select>
+                    </div>
+                    <div className="inline-field field-sm">
+                        <label>Miktar</label>
+                        <input type="number" step="0.00000001" placeholder="0" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
+                    </div>
+                    <div className="inline-field field-sm">
+                        <label>Alış ₺</label>
+                        <input type="number" step="0.01" placeholder="0" value={buyPrice} onChange={(e) => setBuyPrice(e.target.value)} />
+                    </div>
+                    <div className="inline-field field-sm">
+                        <label>Güncel ₺</label>
+                        <input type="number" step="0.01" placeholder="0" value={currentPrice} onChange={(e) => setCurrentPrice(e.target.value)} />
+                    </div>
+                    <button className="btn-add" onClick={handleAddInline}>➕ Ekle</button>
+                </div>
+                <button className="expand-toggle" onClick={() => setShowExpand(!showExpand)}>
+                    {showExpand ? '▲ Gizle' : '▼ Not ekle'}
                 </button>
+                {showExpand && (
+                    <div className="expand-area">
+                        <div className="inline-form-row">
+                            <div className="inline-field">
+                                <label>Notlar</label>
+                                <input type="text" placeholder="Yatırım hakkında not..." value={notes} onChange={(e) => setNotes(e.target.value)} />
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Investments Table */}
@@ -175,7 +245,7 @@ const InvestmentPage: React.FC = () => {
                                         </td>
                                         <td>
                                             <div className="table-actions">
-                                                <button className="btn-icon" onClick={() => { setEditingInvestment(inv); setShowModal(true); }}>
+                                                <button className="btn-icon" onClick={() => { setEditingInvestment(inv); setShowEditModal(true); }}>
                                                     ✏️
                                                 </button>
                                                 <button className="btn-icon delete" onClick={() => handleDeleteInvestment(inv.id)}>
@@ -191,22 +261,22 @@ const InvestmentPage: React.FC = () => {
                 )}
             </div>
 
-            {/* Modal */}
-            {showModal && (
-                <div className="modal-overlay" onClick={() => setShowModal(false)}>
+            {/* Edit Modal */}
+            {showEditModal && editingInvestment && (
+                <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
                     <div className="modal" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
-                            <h2 className="modal-title">{editingInvestment ? 'Yatırım Düzenle' : 'Yatırım Ekle'}</h2>
-                            <button className="modal-close" onClick={() => setShowModal(false)}>×</button>
+                            <h2 className="modal-title">Yatırım Düzenle</h2>
+                            <button className="modal-close" onClick={() => setShowEditModal(false)}>×</button>
                         </div>
-                        <form onSubmit={handleAddInvestment}>
+                        <form onSubmit={handleEditInvestment}>
                             <div className="input-group">
                                 <label>Varlık Adı *</label>
-                                <input name="asset" type="text" className="input" placeholder="Örn: AAPL, BTC" defaultValue={editingInvestment?.asset} required />
+                                <input name="asset" type="text" className="input" defaultValue={editingInvestment.asset} required />
                             </div>
                             <div className="input-group">
                                 <label>Tür *</label>
-                                <select name="type" className="select" defaultValue={editingInvestment?.type || 'stock'} required>
+                                <select name="type" className="select" defaultValue={editingInvestment.type} required>
                                     <option value="stock">Hisse Senedi</option>
                                     <option value="crypto">Kripto</option>
                                     <option value="fund">Fon</option>
@@ -215,21 +285,21 @@ const InvestmentPage: React.FC = () => {
                             </div>
                             <div className="input-group">
                                 <label>Miktar *</label>
-                                <input name="quantity" type="number" step="0.00000001" className="input" defaultValue={editingInvestment?.quantity} required />
+                                <input name="quantity" type="number" step="0.00000001" className="input" defaultValue={editingInvestment.quantity} required />
                             </div>
                             <div className="input-group">
                                 <label>Alış Fiyatı (₺) *</label>
-                                <input name="buyPrice" type="number" step="0.01" className="input" defaultValue={editingInvestment?.buyPrice} required />
+                                <input name="buyPrice" type="number" step="0.01" className="input" defaultValue={editingInvestment.buyPrice} required />
                             </div>
                             <div className="input-group">
                                 <label>Güncel Fiyat (₺) *</label>
-                                <input name="currentPrice" type="number" step="0.01" className="input" defaultValue={editingInvestment?.currentPrice} required />
+                                <input name="currentPrice" type="number" step="0.01" className="input" defaultValue={editingInvestment.currentPrice} required />
                             </div>
                             <div className="input-group">
                                 <label>Notlar</label>
-                                <textarea name="notes" className="textarea" defaultValue={editingInvestment?.notes}></textarea>
+                                <textarea name="notes" className="textarea" defaultValue={editingInvestment.notes}></textarea>
                             </div>
-                            <button type="submit" className="btn btn-primary">{editingInvestment ? 'Güncelle' : 'Ekle'}</button>
+                            <button type="submit" className="btn btn-primary">Güncelle</button>
                         </form>
                     </div>
                 </div>

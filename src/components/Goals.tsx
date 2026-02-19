@@ -6,33 +6,53 @@ import './Goals.css';
 
 const GoalsPage: React.FC = () => {
     const { data, updateData } = useApp();
-    const [showModal, setShowModal] = useState(false);
     const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
+    const [showEditModal, setShowEditModal] = useState(false);
     const [activeTab, setActiveTab] = useState<'active' | 'completed'>('active');
+    const [showExpand, setShowExpand] = useState(false);
 
-    const handleAddGoal = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        const formData = new FormData(e.currentTarget);
+    // Inline form state
+    const [goalTitle, setGoalTitle] = useState('');
+    const [goalCategory, setGoalCategory] = useState<Goal['category']>('personal');
+    const [goalDeadline, setGoalDeadline] = useState('');
+    const [goalNotes, setGoalNotes] = useState('');
+
+    const handleAddGoalInline = () => {
+        if (!goalTitle.trim()) return;
 
         const newGoal: Goal = {
-            id: editingGoal?.id || generateId(),
+            id: generateId(),
+            title: goalTitle.trim(),
+            category: goalCategory,
+            deadline: goalDeadline || undefined,
+            completed: false,
+            notes: goalNotes || undefined,
+        };
+
+        updateData({ goals: [...data.goals, newGoal] });
+        setGoalTitle('');
+        setGoalCategory('personal');
+        setGoalDeadline('');
+        setGoalNotes('');
+        setShowExpand(false);
+    };
+
+    const handleEditGoal = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        if (!editingGoal) return;
+        const formData = new FormData(e.currentTarget);
+
+        const updatedGoal: Goal = {
+            ...editingGoal,
             title: formData.get('title') as string,
             category: formData.get('category') as Goal['category'],
             deadline: formData.get('deadline') as string || undefined,
-            completed: editingGoal?.completed || false,
-            completedDate: editingGoal?.completedDate,
             notes: formData.get('notes') as string || undefined,
         };
 
-        if (editingGoal) {
-            updateData({ goals: data.goals.map((g) => (g.id === editingGoal.id ? newGoal : g)) });
-        } else {
-            updateData({ goals: [...data.goals, newGoal] });
-        }
-
-        setShowModal(false);
+        updateData({ goals: data.goals.map((g) => (g.id === editingGoal.id ? updatedGoal : g)) });
+        setShowEditModal(false);
         setEditingGoal(null);
-        e.currentTarget.reset();
     };
 
     const handleToggleComplete = (id: string) => {
@@ -101,6 +121,55 @@ const GoalsPage: React.FC = () => {
                 </div>
             </div>
 
+            {/* Inline Quick-Add Goal */}
+            <div className="inline-form">
+                <div className="inline-form-row">
+                    <div className="inline-field">
+                        <label>Hedef</label>
+                        <input
+                            type="text"
+                            placeholder="Yeni hedef yaz..."
+                            value={goalTitle}
+                            onChange={(e) => setGoalTitle(e.target.value)}
+                            onKeyDown={(e) => { if (e.key === 'Enter' && !showExpand) handleAddGoalInline(); }}
+                        />
+                    </div>
+                    <div className="inline-field field-select">
+                        <label>Kategori</label>
+                        <select value={goalCategory} onChange={(e) => setGoalCategory(e.target.value as Goal['category'])}>
+                            <option value="work">💼 İş</option>
+                            <option value="health">💪 Sağlık</option>
+                            <option value="education">📚 Eğitim</option>
+                            <option value="finance">💰 Finans</option>
+                            <option value="personal">🌟 Kişisel</option>
+                            <option value="other">🎯 Diğer</option>
+                        </select>
+                    </div>
+                    <div className="inline-field field-md">
+                        <label>Son Tarih</label>
+                        <input type="date" value={goalDeadline} onChange={(e) => setGoalDeadline(e.target.value)} />
+                    </div>
+                    <button className="btn-add" onClick={handleAddGoalInline}>➕ Ekle</button>
+                </div>
+                <button className="expand-toggle" onClick={() => setShowExpand(!showExpand)}>
+                    {showExpand ? '▲ Gizle' : '▼ Detaylar'}
+                </button>
+                {showExpand && (
+                    <div className="expand-area">
+                        <div className="inline-form-row">
+                            <div className="inline-field">
+                                <label>Notlar</label>
+                                <textarea
+                                    placeholder="Hedef hakkında notlar..."
+                                    value={goalNotes}
+                                    onChange={(e) => setGoalNotes(e.target.value)}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
+
             {/* Tabs */}
             <div className="tabs">
                 <button
@@ -114,13 +183,6 @@ const GoalsPage: React.FC = () => {
                     onClick={() => setActiveTab('completed')}
                 >
                     ✅ Tamamlanan ({completedGoals.length})
-                </button>
-            </div>
-
-            <div className="section-header">
-                <h2>{activeTab === 'active' ? 'Aktif Hedefler' : 'Tamamlanan Hedefler'}</h2>
-                <button className="btn btn-primary" onClick={() => { setEditingGoal(null); setShowModal(true); }}>
-                    ➕ Hedef Ekle
                 </button>
             </div>
 
@@ -150,7 +212,7 @@ const GoalsPage: React.FC = () => {
                                         {goal.deadline && (
                                             <div className={`goal-deadline ${isOverdue(goal.deadline) ? 'overdue' : ''}`}>
                                                 📅 {formatDate(goal.deadline)}
-                                                {isOverdue(goal.deadline) && <span className="overdue-badge">GECIKMIŞ</span>}
+                                                {isOverdue(goal.deadline) && <span className="overdue-badge">GECİKMİŞ</span>}
                                             </div>
                                         )}
                                         {goal.notes && (
@@ -158,7 +220,7 @@ const GoalsPage: React.FC = () => {
                                         )}
                                     </div>
                                     <div className="goal-actions">
-                                        <button className="btn btn-secondary btn-sm" onClick={() => { setEditingGoal(goal); setShowModal(true); }}>
+                                        <button className="btn btn-secondary btn-sm" onClick={() => { setEditingGoal(goal); setShowEditModal(true); }}>
                                             ✏️ Düzenle
                                         </button>
                                         <button className="btn btn-secondary btn-sm delete" onClick={() => handleDeleteGoal(goal.id)}>
@@ -205,7 +267,7 @@ const GoalsPage: React.FC = () => {
                                         )}
                                     </div>
                                     <div className="goal-actions">
-                                        <button className="btn btn-secondary btn-sm" onClick={() => { setEditingGoal(goal); setShowModal(true); }}>
+                                        <button className="btn btn-secondary btn-sm" onClick={() => { setEditingGoal(goal); setShowEditModal(true); }}>
                                             ✏️ Düzenle
                                         </button>
                                         <button className="btn btn-secondary btn-sm delete" onClick={() => handleDeleteGoal(goal.id)}>
@@ -219,22 +281,22 @@ const GoalsPage: React.FC = () => {
                 </div>
             )}
 
-            {/* Modal */}
-            {showModal && (
-                <div className="modal-overlay" onClick={() => setShowModal(false)}>
+            {/* Edit Modal (only for editing existing goals) */}
+            {showEditModal && editingGoal && (
+                <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
                     <div className="modal" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
-                            <h2 className="modal-title">{editingGoal ? 'Hedef Düzenle' : 'Hedef Ekle'}</h2>
-                            <button className="modal-close" onClick={() => setShowModal(false)}>×</button>
+                            <h2 className="modal-title">Hedef Düzenle</h2>
+                            <button className="modal-close" onClick={() => setShowEditModal(false)}>×</button>
                         </div>
-                        <form onSubmit={handleAddGoal}>
+                        <form onSubmit={handleEditGoal}>
                             <div className="input-group">
                                 <label>Hedef *</label>
-                                <input name="title" type="text" className="input" placeholder="Hedefini açıkla" defaultValue={editingGoal?.title} required />
+                                <input name="title" type="text" className="input" defaultValue={editingGoal.title} required />
                             </div>
                             <div className="input-group">
                                 <label>Kategori *</label>
-                                <select name="category" className="select" defaultValue={editingGoal?.category || 'personal'} required>
+                                <select name="category" className="select" defaultValue={editingGoal.category} required>
                                     <option value="work">💼 İş</option>
                                     <option value="health">💪 Sağlık</option>
                                     <option value="education">📚 Eğitim</option>
@@ -245,13 +307,13 @@ const GoalsPage: React.FC = () => {
                             </div>
                             <div className="input-group">
                                 <label>Son Tarih</label>
-                                <input name="deadline" type="date" className="input" defaultValue={editingGoal?.deadline} />
+                                <input name="deadline" type="date" className="input" defaultValue={editingGoal.deadline} />
                             </div>
                             <div className="input-group">
                                 <label>Notlar</label>
-                                <textarea name="notes" className="textarea" placeholder="Hedef hakkında notlar..." defaultValue={editingGoal?.notes}></textarea>
+                                <textarea name="notes" className="textarea" defaultValue={editingGoal.notes}></textarea>
                             </div>
-                            <button type="submit" className="btn btn-primary">{editingGoal ? 'Güncelle' : 'Ekle'}</button>
+                            <button type="submit" className="btn btn-primary">Güncelle</button>
                         </form>
                     </div>
                 </div>

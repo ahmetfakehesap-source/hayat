@@ -6,16 +6,47 @@ import './Books.css';
 
 const Books: React.FC = () => {
     const { data, updateData, settings } = useApp();
-    const [showModal, setShowModal] = useState(false);
     const [editingBook, setEditingBook] = useState<Book | null>(null);
+    const [showEditModal, setShowEditModal] = useState(false);
     const [activeTab, setActiveTab] = useState<'reading' | 'completed' | 'want-to-read'>('reading');
+    const [showExpand, setShowExpand] = useState(false);
 
-    const handleAddBook = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        const formData = new FormData(e.currentTarget);
+    // Inline form state
+    const [bookTitle, setBookTitle] = useState('');
+    const [bookAuthor, setBookAuthor] = useState('');
+    const [bookStatus, setBookStatus] = useState<Book['status']>('want-to-read');
+    const [bookPages, setBookPages] = useState('');
+    const [bookStartDate, setBookStartDate] = useState('');
+
+    const handleAddInline = () => {
+        if (!bookTitle.trim() || !bookAuthor.trim()) return;
 
         const newBook: Book = {
-            id: editingBook?.id || generateId(),
+            id: generateId(),
+            title: bookTitle.trim(),
+            author: bookAuthor.trim(),
+            status: bookStatus,
+            totalPages: bookPages ? Number(bookPages) : undefined,
+            currentPage: bookStatus === 'reading' ? 0 : undefined,
+            startDate: bookStartDate || (bookStatus === 'reading' ? new Date().toISOString().split('T')[0] : undefined),
+        };
+
+        updateData({ books: [...data.books, newBook] });
+        setBookTitle('');
+        setBookAuthor('');
+        setBookStatus('want-to-read');
+        setBookPages('');
+        setBookStartDate('');
+        setShowExpand(false);
+    };
+
+    const handleEditBook = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        if (!editingBook) return;
+        const formData = new FormData(e.currentTarget);
+
+        const updatedBook: Book = {
+            ...editingBook,
             title: formData.get('title') as string,
             author: formData.get('author') as string,
             status: formData.get('status') as Book['status'],
@@ -27,15 +58,9 @@ const Books: React.FC = () => {
             finishDate: formData.get('status') === 'completed' ? formData.get('finishDate') as string || undefined : undefined,
         };
 
-        if (editingBook) {
-            updateData({ books: data.books.map((b) => (b.id === editingBook.id ? newBook : b)) });
-        } else {
-            updateData({ books: [...data.books, newBook] });
-        }
-
-        setShowModal(false);
+        updateData({ books: data.books.map((b) => (b.id === editingBook.id ? updatedBook : b)) });
+        setShowEditModal(false);
         setEditingBook(null);
-        e.currentTarget.reset();
     };
 
     const handleDeleteBook = (id: string) => {
@@ -100,6 +125,58 @@ const Books: React.FC = () => {
                 </div>
             </div>
 
+            {/* Inline Quick-Add Book */}
+            <div className="inline-form">
+                <div className="inline-form-row">
+                    <div className="inline-field">
+                        <label>Kitap Adı</label>
+                        <input
+                            type="text"
+                            placeholder="Kitap adı yaz..."
+                            value={bookTitle}
+                            onChange={(e) => setBookTitle(e.target.value)}
+                            onKeyDown={(e) => { if (e.key === 'Enter') handleAddInline(); }}
+                        />
+                    </div>
+                    <div className="inline-field">
+                        <label>Yazar</label>
+                        <input
+                            type="text"
+                            placeholder="Yazar adı..."
+                            value={bookAuthor}
+                            onChange={(e) => setBookAuthor(e.target.value)}
+                            onKeyDown={(e) => { if (e.key === 'Enter') handleAddInline(); }}
+                        />
+                    </div>
+                    <div className="inline-field field-select">
+                        <label>Durum</label>
+                        <select value={bookStatus} onChange={(e) => setBookStatus(e.target.value as Book['status'])}>
+                            <option value="want-to-read">📋 Okunacak</option>
+                            <option value="reading">📖 Okunuyor</option>
+                            <option value="completed">✅ Tamamlandı</option>
+                        </select>
+                    </div>
+                    <button className="btn-add" onClick={handleAddInline}>➕ Ekle</button>
+                </div>
+                <button className="expand-toggle" onClick={() => setShowExpand(!showExpand)}>
+                    {showExpand ? '▲ Gizle' : '▼ Detaylar'}
+                </button>
+                {showExpand && (
+                    <div className="expand-area">
+                        <div className="inline-form-row">
+                            <div className="inline-field field-sm">
+                                <label>Sayfa</label>
+                                <input type="number" placeholder="0" value={bookPages} onChange={(e) => setBookPages(e.target.value)} />
+                            </div>
+                            <div className="inline-field field-md">
+                                <label>Başlangıç</label>
+                                <input type="date" value={bookStartDate} onChange={(e) => setBookStartDate(e.target.value)} />
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
+
             {/* Tabs */}
             <div className="tabs">
                 <button
@@ -119,13 +196,6 @@ const Books: React.FC = () => {
                     onClick={() => setActiveTab('want-to-read')}
                 >
                     📋 Okunacak ({stats.wantToRead})
-                </button>
-            </div>
-
-            <div className="section-header">
-                <h2>{activeTab === 'reading' ? 'Okunuyor' : activeTab === 'completed' ? 'Tamamlanan' : 'Okunacak'}</h2>
-                <button className="btn btn-primary" onClick={() => { setEditingBook(null); setShowModal(true); }}>
-                    ➕ Kitap Ekle
                 </button>
             </div>
 
@@ -163,7 +233,7 @@ const Books: React.FC = () => {
                                         )}
                                     </div>
                                     <div className="book-actions">
-                                        <button className="btn btn-secondary btn-sm" onClick={() => { setEditingBook(book); setShowModal(true); }}>
+                                        <button className="btn btn-secondary btn-sm" onClick={() => { setEditingBook(book); setShowEditModal(true); }}>
                                             ✏️ Düzenle
                                         </button>
                                         <button className="btn btn-secondary btn-sm delete" onClick={() => handleDeleteBook(book.id)}>
@@ -207,7 +277,7 @@ const Books: React.FC = () => {
                                         </div>
                                     )}
                                     <div className="book-actions">
-                                        <button className="btn btn-secondary btn-sm" onClick={() => { setEditingBook(book); setShowModal(true); }}>
+                                        <button className="btn btn-secondary btn-sm" onClick={() => { setEditingBook(book); setShowEditModal(true); }}>
                                             ✏️ Düzenle
                                         </button>
                                         <button className="btn btn-secondary btn-sm delete" onClick={() => handleDeleteBook(book.id)}>
@@ -238,7 +308,7 @@ const Books: React.FC = () => {
                                         <div className="book-author">{book.author}</div>
                                     </div>
                                     <div className="book-actions">
-                                        <button className="btn btn-secondary btn-sm" onClick={() => { setEditingBook(book); setShowModal(true); }}>
+                                        <button className="btn btn-secondary btn-sm" onClick={() => { setEditingBook(book); setShowEditModal(true); }}>
                                             ✏️ Düzenle
                                         </button>
                                         <button className="btn btn-secondary btn-sm delete" onClick={() => handleDeleteBook(book.id)}>
@@ -252,26 +322,26 @@ const Books: React.FC = () => {
                 </div>
             )}
 
-            {/* Modal */}
-            {showModal && (
-                <div className="modal-overlay" onClick={() => setShowModal(false)}>
+            {/* Edit Modal (for editing existing books) */}
+            {showEditModal && editingBook && (
+                <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
                     <div className="modal" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
-                            <h2 className="modal-title">{editingBook ? 'Kitap Düzenle' : 'Kitap Ekle'}</h2>
-                            <button className="modal-close" onClick={() => setShowModal(false)}>×</button>
+                            <h2 className="modal-title">Kitap Düzenle</h2>
+                            <button className="modal-close" onClick={() => setShowEditModal(false)}>×</button>
                         </div>
-                        <form onSubmit={handleAddBook}>
+                        <form onSubmit={handleEditBook}>
                             <div className="input-group">
                                 <label>Kitap Adı *</label>
-                                <input name="title" type="text" className="input" defaultValue={editingBook?.title} required />
+                                <input name="title" type="text" className="input" defaultValue={editingBook.title} required />
                             </div>
                             <div className="input-group">
                                 <label>Yazar *</label>
-                                <input name="author" type="text" className="input" defaultValue={editingBook?.author} required />
+                                <input name="author" type="text" className="input" defaultValue={editingBook.author} required />
                             </div>
                             <div className="input-group">
                                 <label>Durum *</label>
-                                <select name="status" className="select" defaultValue={editingBook?.status || 'want-to-read'} required>
+                                <select name="status" className="select" defaultValue={editingBook.status} required>
                                     <option value="reading">Okunuyor</option>
                                     <option value="completed">Tamamlandı</option>
                                     <option value="want-to-read">Okunacak</option>
@@ -279,23 +349,23 @@ const Books: React.FC = () => {
                             </div>
                             <div className="input-group">
                                 <label>Toplam Sayfa</label>
-                                <input name="totalPages" type="number" className="input" defaultValue={editingBook?.totalPages} />
+                                <input name="totalPages" type="number" className="input" defaultValue={editingBook.totalPages} />
                             </div>
                             <div className="input-group">
-                                <label>Şu Anki Sayfa (Okunuyor ise)</label>
-                                <input name="currentPage" type="number" className="input" defaultValue={editingBook?.currentPage} />
+                                <label>Şu Anki Sayfa</label>
+                                <input name="currentPage" type="number" className="input" defaultValue={editingBook.currentPage} />
                             </div>
                             <div className="input-group">
                                 <label>Başlangıç Tarihi</label>
-                                <input name="startDate" type="date" className="input" defaultValue={editingBook?.startDate} />
+                                <input name="startDate" type="date" className="input" defaultValue={editingBook.startDate} />
                             </div>
                             <div className="input-group">
-                                <label>Bitiş Tarihi (Tamamlandı ise)</label>
-                                <input name="finishDate" type="date" className="input" defaultValue={editingBook?.finishDate} />
+                                <label>Bitiş Tarihi</label>
+                                <input name="finishDate" type="date" className="input" defaultValue={editingBook.finishDate} />
                             </div>
                             <div className="input-group">
                                 <label>Puan (1-5)</label>
-                                <select name="rating" className="select" defaultValue={editingBook?.rating}>
+                                <select name="rating" className="select" defaultValue={editingBook.rating}>
                                     <option value="">Seçiniz</option>
                                     <option value="1">⭐ 1</option>
                                     <option value="2">⭐⭐ 2</option>
@@ -306,9 +376,9 @@ const Books: React.FC = () => {
                             </div>
                             <div className="input-group">
                                 <label>Yorum</label>
-                                <textarea name="review" className="textarea" defaultValue={editingBook?.review}></textarea>
+                                <textarea name="review" className="textarea" defaultValue={editingBook.review}></textarea>
                             </div>
-                            <button type="submit" className="btn btn-primary">{editingBook ? 'Güncelle' : 'Ekle'}</button>
+                            <button type="submit" className="btn btn-primary">Güncelle</button>
                         </form>
                     </div>
                 </div>

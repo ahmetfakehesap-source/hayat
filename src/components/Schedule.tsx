@@ -6,8 +6,15 @@ import './Schedule.css';
 
 const SchedulePage: React.FC = () => {
     const { data, updateData } = useApp();
-    const [showModal, setShowModal] = useState(false);
     const [editingEntry, setEditingEntry] = useState<ScheduleEntry | null>(null);
+    const [showEditModal, setShowEditModal] = useState(false);
+
+    // Inline form state
+    const [entryDay, setEntryDay] = useState<ScheduleEntry['day']>('monday');
+    const [entryTime, setEntryTime] = useState('');
+    const [entryActivity, setEntryActivity] = useState('');
+    const [entryCategory, setEntryCategory] = useState('');
+    const [showExpand, setShowExpand] = useState(false);
 
     const days: ScheduleEntry['day'][] = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 
@@ -21,27 +28,39 @@ const SchedulePage: React.FC = () => {
         sunday: 'Pazar',
     };
 
-    const handleAddEntry = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        const formData = new FormData(e.currentTarget);
+    const handleAddInline = () => {
+        if (!entryActivity.trim() || !entryTime) return;
 
         const newEntry: ScheduleEntry = {
-            id: editingEntry?.id || generateId(),
+            id: generateId(),
+            day: entryDay,
+            time: entryTime,
+            activity: entryActivity.trim(),
+            category: entryCategory || undefined,
+        };
+
+        updateData({ schedule: [...data.schedule, newEntry] });
+        setEntryActivity('');
+        setEntryTime('');
+        setEntryCategory('');
+    };
+
+    const handleEditEntry = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        if (!editingEntry) return;
+        const formData = new FormData(e.currentTarget);
+
+        const updatedEntry: ScheduleEntry = {
+            ...editingEntry,
             day: formData.get('day') as ScheduleEntry['day'],
             time: formData.get('time') as string,
             activity: formData.get('activity') as string,
             category: formData.get('category') as string || undefined,
         };
 
-        if (editingEntry) {
-            updateData({ schedule: data.schedule.map((e) => (e.id === editingEntry.id ? newEntry : e)) });
-        } else {
-            updateData({ schedule: [...data.schedule, newEntry] });
-        }
-
-        setShowModal(false);
+        updateData({ schedule: data.schedule.map((e) => (e.id === editingEntry.id ? updatedEntry : e)) });
+        setShowEditModal(false);
         setEditingEntry(null);
-        e.currentTarget.reset();
     };
 
     const handleDeleteEntry = (id: string) => {
@@ -63,11 +82,55 @@ const SchedulePage: React.FC = () => {
                 <p className="page-subtitle">Haftanı planla ve düzenli ol</p>
             </div>
 
-            <div className="section-header">
-                <h2>Haftalık Planlama</h2>
-                <button className="btn btn-primary" onClick={() => { setEditingEntry(null); setShowModal(true); }}>
-                    ➕ Etkinlik Ekle
+            {/* Inline Quick-Add */}
+            <div className="inline-form">
+                <div className="inline-form-row">
+                    <div className="inline-field field-select">
+                        <label>Gün</label>
+                        <select value={entryDay} onChange={(e) => setEntryDay(e.target.value as ScheduleEntry['day'])}>
+                            <option value="monday">Pazartesi</option>
+                            <option value="tuesday">Salı</option>
+                            <option value="wednesday">Çarşamba</option>
+                            <option value="thursday">Perşembe</option>
+                            <option value="friday">Cuma</option>
+                            <option value="saturday">Cumartesi</option>
+                            <option value="sunday">Pazar</option>
+                        </select>
+                    </div>
+                    <div className="inline-field field-sm">
+                        <label>Saat</label>
+                        <input type="time" value={entryTime} onChange={(e) => setEntryTime(e.target.value)} />
+                    </div>
+                    <div className="inline-field">
+                        <label>Etkinlik</label>
+                        <input
+                            type="text"
+                            placeholder="Spor, Ders, Toplantı..."
+                            value={entryActivity}
+                            onChange={(e) => setEntryActivity(e.target.value)}
+                            onKeyDown={(e) => { if (e.key === 'Enter') handleAddInline(); }}
+                        />
+                    </div>
+                    <button className="btn-add" onClick={handleAddInline}>➕ Ekle</button>
+                </div>
+                <button className="expand-toggle" onClick={() => setShowExpand(!showExpand)}>
+                    {showExpand ? '▲ Gizle' : '▼ Kategori'}
                 </button>
+                {showExpand && (
+                    <div className="expand-area">
+                        <div className="inline-form-row">
+                            <div className="inline-field">
+                                <label>Kategori</label>
+                                <input
+                                    type="text"
+                                    placeholder="Sağlık, Eğitim, İş..."
+                                    value={entryCategory}
+                                    onChange={(e) => setEntryCategory(e.target.value)}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
 
             <div className="schedule-grid">
@@ -93,7 +156,7 @@ const SchedulePage: React.FC = () => {
                                                 )}
                                             </div>
                                             <div className="entry-actions">
-                                                <button className="btn-icon-small" onClick={() => { setEditingEntry(entry); setShowModal(true); }}>
+                                                <button className="btn-icon-small" onClick={() => { setEditingEntry(entry); setShowEditModal(true); }}>
                                                     ✏️
                                                 </button>
                                                 <button className="btn-icon-small delete" onClick={() => handleDeleteEntry(entry.id)}>
@@ -109,18 +172,18 @@ const SchedulePage: React.FC = () => {
                 })}
             </div>
 
-            {/* Modal */}
-            {showModal && (
-                <div className="modal-overlay" onClick={() => setShowModal(false)}>
+            {/* Edit Modal */}
+            {showEditModal && editingEntry && (
+                <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
                     <div className="modal" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
-                            <h2 className="modal-title">{editingEntry ? 'Etkinlik Düzenle' : 'Etkinlik Ekle'}</h2>
-                            <button className="modal-close" onClick={() => setShowModal(false)}>×</button>
+                            <h2 className="modal-title">Etkinlik Düzenle</h2>
+                            <button className="modal-close" onClick={() => setShowEditModal(false)}>×</button>
                         </div>
-                        <form onSubmit={handleAddEntry}>
+                        <form onSubmit={handleEditEntry}>
                             <div className="input-group">
                                 <label>Gün *</label>
-                                <select name="day" className="select" defaultValue={editingEntry?.day || 'monday'} required>
+                                <select name="day" className="select" defaultValue={editingEntry.day} required>
                                     <option value="monday">Pazartesi</option>
                                     <option value="tuesday">Salı</option>
                                     <option value="wednesday">Çarşamba</option>
@@ -132,17 +195,17 @@ const SchedulePage: React.FC = () => {
                             </div>
                             <div className="input-group">
                                 <label>Saat *</label>
-                                <input name="time" type="time" className="input" defaultValue={editingEntry?.time} required />
+                                <input name="time" type="time" className="input" defaultValue={editingEntry.time} required />
                             </div>
                             <div className="input-group">
                                 <label>Etkinlik *</label>
-                                <input name="activity" type="text" className="input" placeholder="Örn: Spor, Ders" defaultValue={editingEntry?.activity} required />
+                                <input name="activity" type="text" className="input" defaultValue={editingEntry.activity} required />
                             </div>
                             <div className="input-group">
                                 <label>Kategori</label>
-                                <input name="category" type="text" className="input" placeholder="Örn: Sağlık, Eğitim" defaultValue={editingEntry?.category} />
+                                <input name="category" type="text" className="input" defaultValue={editingEntry.category} />
                             </div>
-                            <button type="submit" className="btn btn-primary">{editingEntry ? 'Güncelle' : 'Ekle'}</button>
+                            <button type="submit" className="btn btn-primary">Güncelle</button>
                         </form>
                     </div>
                 </div>

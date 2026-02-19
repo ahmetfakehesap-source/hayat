@@ -383,20 +383,57 @@
 
 /* Responsive */
 @media (max-width: 768px) {
+    .health-stats {
+        margin-bottom: 1.25rem;
+    }
+
     .header-actions {
         width: 100%;
     }
 
     .header-actions .btn {
         flex: 1;
+        font-size: 0.813rem;
+        padding: 0.5rem 0.75rem;
     }
 
     .macros-grid {
         grid-template-columns: repeat(3, 1fr);
+        gap: 0.625rem;
+    }
+
+    .macro-card {
+        padding: 0.75rem 0.5rem;
+    }
+
+    .macro-icon {
+        font-size: 1.5rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .macro-value {
+        font-size: 1.125rem;
+    }
+
+    .macro-label {
+        font-size: 0.7rem;
     }
 
     .recipes-grid {
         grid-template-columns: 1fr;
+    }
+
+    .recipe-card {
+        padding: 1rem;
+    }
+
+    .measurements-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+
+    .measurement-card {
+        padding: 0.75rem;
     }
 
     .table {
@@ -406,6 +443,18 @@
     .table th,
     .table td {
         padding: 0.75rem 0.5rem;
+    }
+
+    .entry-item {
+        padding: 0.875rem;
+    }
+
+    .entry-card-modern {
+        padding: 1rem;
+    }
+
+    .workout-item {
+        padding: 0.875rem;
     }
 }
 
@@ -419,7 +468,7 @@
 
 /* Settings Content */
 .settings-content {
-    padding: 2rem;
+    padding: 1.5rem;
 }
 
 .settings-description {

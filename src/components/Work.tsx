@@ -6,31 +6,27 @@ import './Work.css';
 
 const Work: React.FC = () => {
     const { data, updateData } = useApp();
-    const [showTaskModal, setShowTaskModal] = useState(false);
     const [showProjectModal, setShowProjectModal] = useState(false);
     const [editingProject, setEditingProject] = useState<Project | null>(null);
     const [activeTab, setActiveTab] = useState<'tasks' | 'projects'>('tasks');
+    const [taskTitle, setTaskTitle] = useState('');
+    const [taskCategory, setTaskCategory] = useState('');
 
     // Task handlers
-    const handleAddTask = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        const formData = new FormData(e.currentTarget);
-        const title = formData.get('title') as string;
-        const category = formData.get('category') as string;
-
-        if (!title.trim()) return;
+    const handleAddTaskInline = () => {
+        if (!taskTitle.trim()) return;
 
         const newTask: Task = {
             id: generateId(),
-            title: title.trim(),
+            title: taskTitle.trim(),
             completed: false,
             createdAt: new Date().toISOString(),
-            category: category || undefined,
+            category: taskCategory || undefined,
         };
 
         updateData({ tasks: [...data.tasks, newTask] });
-        setShowTaskModal(false);
-        e.currentTarget.reset();
+        setTaskTitle('');
+        setTaskCategory('');
     };
 
     const handleToggleTask = (id: string) => {
@@ -145,11 +141,31 @@ const Work: React.FC = () => {
             {/* Tasks Tab */}
             {activeTab === 'tasks' && (
                 <div className="tab-content fade-in">
-                    <div className="section-header">
-                        <h2>Görevler</h2>
-                        <button className="btn btn-primary" onClick={() => setShowTaskModal(true)}>
-                            ➕ Yeni Görev
-                        </button>
+                    {/* Inline Quick-Add Task */}
+                    <div className="inline-form">
+                        <div className="inline-form-row">
+                            <div className="inline-field">
+                                <label>Görev</label>
+                                <input
+                                    type="text"
+                                    placeholder="Yeni görev yaz..."
+                                    value={taskTitle}
+                                    onChange={(e) => setTaskTitle(e.target.value)}
+                                    onKeyDown={(e) => { if (e.key === 'Enter') handleAddTaskInline(); }}
+                                />
+                            </div>
+                            <div className="inline-field field-select">
+                                <label>Kategori</label>
+                                <input
+                                    type="text"
+                                    placeholder="İş, Kişisel..."
+                                    value={taskCategory}
+                                    onChange={(e) => setTaskCategory(e.target.value)}
+                                    onKeyDown={(e) => { if (e.key === 'Enter') handleAddTaskInline(); }}
+                                />
+                            </div>
+                            <button className="btn-add" onClick={handleAddTaskInline}>➕ Ekle</button>
+                        </div>
                     </div>
 
                     {/* Active Tasks */}
@@ -338,45 +354,6 @@ const Work: React.FC = () => {
                 </div>
             )}
 
-            {/* Task Modal */}
-            {showTaskModal && (
-                <div className="modal-overlay" onClick={() => setShowTaskModal(false)}>
-                    <div className="modal" onClick={(e) => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h2 className="modal-title">Yeni Görev Ekle</h2>
-                            <button className="modal-close" onClick={() => setShowTaskModal(false)}>
-                                ×
-                            </button>
-                        </div>
-                        <form onSubmit={handleAddTask}>
-                            <div className="input-group">
-                                <label htmlFor="task-title">Görev Adı *</label>
-                                <input
-                                    id="task-title"
-                                    name="title"
-                                    type="text"
-                                    className="input"
-                                    placeholder="Örn: Rapor hazırla"
-                                    required
-                                />
-                            </div>
-                            <div className="input-group">
-                                <label htmlFor="task-category">Kategori</label>
-                                <input
-                                    id="task-category"
-                                    name="category"
-                                    type="text"
-                                    className="input"
-                                    placeholder="Örn: İş, Kişisel"
-                                />
-                            </div>
-                            <button type="submit" className="btn btn-primary">
-                                Ekle
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            )}
 
             {/* Project Modal */}
             {showProjectModal && (

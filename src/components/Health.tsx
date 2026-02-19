@@ -8,8 +8,6 @@ const Health: React.FC = () => {
     const { data, updateData, settings, updateSettings } = useApp();
     const [activeTab, setActiveTab] = useState<'calories' | 'workout' | 'recipes' | 'products' | 'settings' | 'history' | 'analytics'>('calories');
     const [showCalorieModal, setShowCalorieModal] = useState(false);
-    const [showWorkoutModal, setShowWorkoutModal] = useState(false);
-    const [showMeasurementModal, setShowMeasurementModal] = useState(false);
     const [showRecipeModal, setShowRecipeModal] = useState(false);
     const [showProductModal, setShowProductModal] = useState(false);
     const [showSettingsModal, setShowSettingsModal] = useState(false);
@@ -19,19 +17,66 @@ const Health: React.FC = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [dateRange, setDateRange] = useState<'7' | '30' | '90' | 'all'>('30');
 
-    // Calorie tracking handlers
-    const handleAddCalorie = (e: React.FormEvent<HTMLFormElement>) => {
+    // Inline calorie form state
+    const [calMeal, setCalMeal] = useState<CalorieEntry['meal']>('breakfast');
+    const [calFood, setCalFood] = useState('');
+    const [calCalories, setCalCalories] = useState('');
+    const [calProtein, setCalProtein] = useState('');
+    const [calCarbs, setCalCarbs] = useState('');
+    const [calFat, setCalFat] = useState('');
+    const [showCalExpand, setShowCalExpand] = useState(false);
+
+    // Inline workout form state
+    const [wkType, setWkType] = useState('');
+    const [wkDuration, setWkDuration] = useState('');
+    const [wkCalBurned, setWkCalBurned] = useState('');
+    const [wkNotes, setWkNotes] = useState('');
+    const [showWkExpand, setShowWkExpand] = useState(false);
+
+    // Inline measurement form state
+    const [measWeight, setMeasWeight] = useState('');
+    const [measBodyFat, setMeasBodyFat] = useState('');
+    const [showMeasExpand, setShowMeasExpand] = useState(false);
+    const [measChest, setMeasChest] = useState('');
+    const [measWaist, setMeasWaist] = useState('');
+    const [measHips, setMeasHips] = useState('');
+    const [measArms, setMeasArms] = useState('');
+
+    // Inline calorie add
+    const handleAddCalorieInline = () => {
+        if (!calFood.trim() || !calCalories) return;
+
+        const now = new Date();
+        const entry: CalorieEntry = {
+            id: generateId(),
+            date: now.toISOString().split('T')[0],
+            time: `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`,
+            meal: calMeal,
+            food: calFood.trim(),
+            calories: Number(calCalories),
+            protein: Number(calProtein) || 0,
+            carbs: Number(calCarbs) || 0,
+            fat: Number(calFat) || 0,
+        };
+
+        updateData({ calorieEntries: [...data.calorieEntries, entry] });
+        setCalFood('');
+        setCalCalories('');
+        setCalProtein('');
+        setCalCarbs('');
+        setCalFat('');
+        setShowCalExpand(false);
+    };
+
+    // Edit calorie (modal)
+    const handleEditCalorie = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        if (!editingCalorie) return;
         const formData = new FormData(e.currentTarget);
 
-        // Auto-capture current time only for new entries
-        const now = new Date();
-        const time = editingCalorie?.time || `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-
         const entry: CalorieEntry = {
-            id: editingCalorie?.id || generateId(),
+            ...editingCalorie,
             date: formData.get('date') as string,
-            time: time,
             meal: formData.get('meal') as CalorieEntry['meal'],
             food: formData.get('food') as string,
             calories: Number(formData.get('calories')),
@@ -40,17 +85,9 @@ const Health: React.FC = () => {
             fat: Number(formData.get('fat')) || 0,
         };
 
-        if (editingCalorie) {
-            // Update existing entry
-            updateData({ calorieEntries: data.calorieEntries.map(c => c.id === editingCalorie.id ? entry : c) });
-        } else {
-            // Add new entry
-            updateData({ calorieEntries: [...data.calorieEntries, entry] });
-        }
-
+        updateData({ calorieEntries: data.calorieEntries.map(c => c.id === editingCalorie.id ? entry : c) });
         setShowCalorieModal(false);
         setEditingCalorie(null);
-        e.currentTarget.reset();
     };
 
     const handleDeleteCalorie = (id: string) => {
@@ -59,23 +96,25 @@ const Health: React.FC = () => {
         }
     };
 
-    // Workout tracking handlers
-    const handleAddWorkout = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        const formData = new FormData(e.currentTarget);
+    // Inline workout add
+    const handleAddWorkoutInline = () => {
+        if (!wkType.trim() || !wkDuration || !wkCalBurned) return;
 
         const newEntry: WorkoutEntry = {
             id: generateId(),
-            date: formData.get('date') as string,
-            type: formData.get('type') as string,
-            duration: Number(formData.get('duration')),
-            caloriesBurned: Number(formData.get('caloriesBurned')),
-            notes: formData.get('notes') as string || undefined,
+            date: new Date().toISOString().split('T')[0],
+            type: wkType.trim(),
+            duration: Number(wkDuration),
+            caloriesBurned: Number(wkCalBurned),
+            notes: wkNotes || undefined,
         };
 
         updateData({ workoutEntries: [...data.workoutEntries, newEntry] });
-        setShowWorkoutModal(false);
-        e.currentTarget.reset();
+        setWkType('');
+        setWkDuration('');
+        setWkCalBurned('');
+        setWkNotes('');
+        setShowWkExpand(false);
     };
 
     const handleDeleteWorkout = (id: string) => {
@@ -84,27 +123,31 @@ const Health: React.FC = () => {
         }
     };
 
-    // Body measurement handlers
-    const handleAddMeasurement = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        const formData = new FormData(e.currentTarget);
+    // Inline measurement add
+    const handleAddMeasurementInline = () => {
+        if (!measWeight) return;
 
         const newEntry: BodyMeasurement = {
             id: generateId(),
-            date: formData.get('date') as string,
-            weight: Number(formData.get('weight')),
-            bodyFat: Number(formData.get('bodyFat')) || undefined,
+            date: new Date().toISOString().split('T')[0],
+            weight: Number(measWeight),
+            bodyFat: Number(measBodyFat) || undefined,
             measurements: {
-                chest: Number(formData.get('chest')) || undefined,
-                waist: Number(formData.get('waist')) || undefined,
-                hips: Number(formData.get('hips')) || undefined,
-                arms: Number(formData.get('arms')) || undefined,
+                chest: Number(measChest) || undefined,
+                waist: Number(measWaist) || undefined,
+                hips: Number(measHips) || undefined,
+                arms: Number(measArms) || undefined,
             },
         };
 
         updateData({ bodyMeasurements: [...data.bodyMeasurements, newEntry] });
-        setShowMeasurementModal(false);
-        e.currentTarget.reset();
+        setMeasWeight('');
+        setMeasBodyFat('');
+        setMeasChest('');
+        setMeasWaist('');
+        setMeasHips('');
+        setMeasArms('');
+        setShowMeasExpand(false);
     };
 
     const handleDeleteMeasurement = (id: string) => {
@@ -424,14 +467,57 @@ const Health: React.FC = () => {
                 <div className="tab-content fade-in">
                     <div className="section-header">
                         <h2>Kalori Takibi</h2>
-                        <div className="header-actions">
-                            <button className="btn btn-secondary" onClick={() => setShowMeasurementModal(true)}>
-                                ⚖️ Ölçüm Ekle
-                            </button>
-                            <button className="btn btn-primary" onClick={() => setShowCalorieModal(true)}>
-                                ➕ Öğün Ekle
-                            </button>
+                    </div>
+
+                    {/* Inline Quick-Add Calorie */}
+                    <div className="inline-form">
+                        <div className="inline-form-row">
+                            <div className="inline-field field-select">
+                                <label>Öğün</label>
+                                <select value={calMeal} onChange={(e) => setCalMeal(e.target.value as CalorieEntry['meal'])}>
+                                    <option value="breakfast">🌅 Kahvaltı</option>
+                                    <option value="lunch">🌞 Öğle</option>
+                                    <option value="dinner">🌙 Akşam</option>
+                                    <option value="snack">🍎 Ara Öğün</option>
+                                </select>
+                            </div>
+                            <div className="inline-field">
+                                <label>Yemek/İçecek</label>
+                                <input
+                                    type="text"
+                                    placeholder="Yulaf + Muz..."
+                                    value={calFood}
+                                    onChange={(e) => setCalFood(e.target.value)}
+                                    onKeyDown={(e) => { if (e.key === 'Enter') handleAddCalorieInline(); }}
+                                />
+                            </div>
+                            <div className="inline-field field-sm">
+                                <label>Kalori</label>
+                                <input type="number" placeholder="kcal" value={calCalories} onChange={(e) => setCalCalories(e.target.value)} />
+                            </div>
+                            <button className="btn-add" onClick={handleAddCalorieInline}>➕ Ekle</button>
                         </div>
+                        <button className="expand-toggle" onClick={() => setShowCalExpand(!showCalExpand)}>
+                            {showCalExpand ? '▲ Gizle' : '▼ Makrolar'}
+                        </button>
+                        {showCalExpand && (
+                            <div className="expand-area">
+                                <div className="inline-form-row">
+                                    <div className="inline-field field-sm">
+                                        <label>🥩 Protein (g)</label>
+                                        <input type="number" placeholder="0" value={calProtein} onChange={(e) => setCalProtein(e.target.value)} />
+                                    </div>
+                                    <div className="inline-field field-sm">
+                                        <label>🍞 Karb (g)</label>
+                                        <input type="number" placeholder="0" value={calCarbs} onChange={(e) => setCalCarbs(e.target.value)} />
+                                    </div>
+                                    <div className="inline-field field-sm">
+                                        <label>🧈 Yağ (g)</label>
+                                        <input type="number" placeholder="0" value={calFat} onChange={(e) => setCalFat(e.target.value)} />
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Macros */}
@@ -582,28 +668,66 @@ const Health: React.FC = () => {
                         )}
                     </div>
 
-                    {/* Body Measurements */}
-                    {data.bodyMeasurements.length > 0 && (
-                        <>
-                            <h3 className="subsection-title">Vücut Ölçümleri</h3>
-                            <div className="measurements-grid">
-                                {data.bodyMeasurements
-                                    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-                                    .slice(0, 10)
-                                    .map((m) => (
-                                        <div key={m.id} className="measurement-card card">
-                                            <div className="measurement-header">
-                                                <div className="measurement-date">{formatDate(m.date)}</div>
-                                                <button className="btn-icon delete" onClick={() => handleDeleteMeasurement(m.id)}>🗑️</button>
-                                            </div>
-                                            <div className="measurement-main">
-                                                <strong>{m.weight} kg</strong>
-                                                {m.bodyFat && <span>{m.bodyFat}% yağ</span>}
-                                            </div>
-                                        </div>
-                                    ))}
+                    {/* Inline Quick-Add Measurement */}
+                    <h3 className="subsection-title">Vücut Ölçümleri</h3>
+                    <div className="inline-form">
+                        <div className="inline-form-row">
+                            <div className="inline-field field-sm">
+                                <label>Kilo (kg)</label>
+                                <input type="number" step="0.1" placeholder="0" value={measWeight} onChange={(e) => setMeasWeight(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') handleAddMeasurementInline(); }} />
                             </div>
-                        </>
+                            <div className="inline-field field-sm">
+                                <label>Yağ %</label>
+                                <input type="number" step="0.1" placeholder="0" value={measBodyFat} onChange={(e) => setMeasBodyFat(e.target.value)} />
+                            </div>
+                            <button className="btn-add" onClick={handleAddMeasurementInline}>⚖️ Kaydet</button>
+                        </div>
+                        <button className="expand-toggle" onClick={() => setShowMeasExpand(!showMeasExpand)}>
+                            {showMeasExpand ? '▲ Gizle' : '▼ Detaylı Ölçüm'}
+                        </button>
+                        {showMeasExpand && (
+                            <div className="expand-area">
+                                <div className="inline-form-row">
+                                    <div className="inline-field field-sm">
+                                        <label>Göğüs (cm)</label>
+                                        <input type="number" step="0.1" placeholder="0" value={measChest} onChange={(e) => setMeasChest(e.target.value)} />
+                                    </div>
+                                    <div className="inline-field field-sm">
+                                        <label>Bel (cm)</label>
+                                        <input type="number" step="0.1" placeholder="0" value={measWaist} onChange={(e) => setMeasWaist(e.target.value)} />
+                                    </div>
+                                    <div className="inline-field field-sm">
+                                        <label>Kalça (cm)</label>
+                                        <input type="number" step="0.1" placeholder="0" value={measHips} onChange={(e) => setMeasHips(e.target.value)} />
+                                    </div>
+                                    <div className="inline-field field-sm">
+                                        <label>Kol (cm)</label>
+                                        <input type="number" step="0.1" placeholder="0" value={measArms} onChange={(e) => setMeasArms(e.target.value)} />
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Measurement History */}
+                    {data.bodyMeasurements.length > 0 && (
+                        <div className="measurements-grid">
+                            {data.bodyMeasurements
+                                .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                                .slice(0, 10)
+                                .map((m) => (
+                                    <div key={m.id} className="measurement-card card">
+                                        <div className="measurement-header">
+                                            <div className="measurement-date">{formatDate(m.date)}</div>
+                                            <button className="btn-icon delete" onClick={() => handleDeleteMeasurement(m.id)}>🗑️</button>
+                                        </div>
+                                        <div className="measurement-main">
+                                            <strong>{m.weight} kg</strong>
+                                            {m.bodyFat && <span>{m.bodyFat}% yağ</span>}
+                                        </div>
+                                    </div>
+                                ))}
+                        </div>
                     )}
                 </div>
             )}
@@ -613,9 +737,44 @@ const Health: React.FC = () => {
                 <div className="tab-content fade-in">
                     <div className="section-header">
                         <h2>Antrenman Takibi</h2>
-                        <button className="btn btn-primary" onClick={() => setShowWorkoutModal(true)}>
-                            ➕ Antrenman Ekle
+                    </div>
+
+                    {/* Inline Quick-Add Workout */}
+                    <div className="inline-form">
+                        <div className="inline-form-row">
+                            <div className="inline-field">
+                                <label>Antrenman</label>
+                                <input
+                                    type="text"
+                                    placeholder="Koşu, Ağırlık, Yoga..."
+                                    value={wkType}
+                                    onChange={(e) => setWkType(e.target.value)}
+                                    onKeyDown={(e) => { if (e.key === 'Enter') handleAddWorkoutInline(); }}
+                                />
+                            </div>
+                            <div className="inline-field field-sm">
+                                <label>Süre (dk)</label>
+                                <input type="number" placeholder="0" value={wkDuration} onChange={(e) => setWkDuration(e.target.value)} />
+                            </div>
+                            <div className="inline-field field-sm">
+                                <label>Kalori</label>
+                                <input type="number" placeholder="kcal" value={wkCalBurned} onChange={(e) => setWkCalBurned(e.target.value)} />
+                            </div>
+                            <button className="btn-add" onClick={handleAddWorkoutInline}>➕ Ekle</button>
+                        </div>
+                        <button className="expand-toggle" onClick={() => setShowWkExpand(!showWkExpand)}>
+                            {showWkExpand ? '▲ Gizle' : '▼ Not ekle'}
                         </button>
+                        {showWkExpand && (
+                            <div className="expand-area">
+                                <div className="inline-form-row">
+                                    <div className="inline-field">
+                                        <label>Notlar</label>
+                                        <input type="text" placeholder="Antrenman hakkında not..." value={wkNotes} onChange={(e) => setWkNotes(e.target.value)} />
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     <div className="entries-list">
@@ -1061,22 +1220,22 @@ const Health: React.FC = () => {
                 );
             })()}
 
-            {/* Modals */}
-            {showCalorieModal && (
+            {/* Calorie Edit Modal (only for editing existing entries) */}
+            {showCalorieModal && editingCalorie && (
                 <div className="modal-overlay" onClick={() => { setShowCalorieModal(false); setEditingCalorie(null); }}>
                     <div className="modal" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
-                            <h2 className="modal-title">{editingCalorie ? 'Öğün Düzenle' : 'Öğün Ekle'}</h2>
+                            <h2 className="modal-title">Öğün Düzenle</h2>
                             <button className="modal-close" onClick={() => { setShowCalorieModal(false); setEditingCalorie(null); }}>×</button>
                         </div>
-                        <form onSubmit={handleAddCalorie}>
+                        <form onSubmit={handleEditCalorie}>
                             <div className="input-group">
                                 <label>Tarih *</label>
-                                <input name="date" type="date" className="input" defaultValue={editingCalorie?.date || new Date().toISOString().split('T')[0]} required />
+                                <input name="date" type="date" className="input" defaultValue={editingCalorie.date} required />
                             </div>
                             <div className="input-group">
                                 <label>Öğün *</label>
-                                <select name="meal" className="select" defaultValue={editingCalorie?.meal || 'breakfast'} required>
+                                <select name="meal" className="select" defaultValue={editingCalorie.meal} required>
                                     <option value="breakfast">Kahvaltı</option>
                                     <option value="lunch">Öğle Yemeği</option>
                                     <option value="dinner">Akşam Yemeği</option>
@@ -1085,101 +1244,25 @@ const Health: React.FC = () => {
                             </div>
                             <div className="input-group">
                                 <label>Yemek/İçecek *</label>
-                                <input name="food" type="text" className="input" placeholder="Örn: Yulaf + Muz" defaultValue={editingCalorie?.food} required />
+                                <input name="food" type="text" className="input" defaultValue={editingCalorie.food} required />
                             </div>
                             <div className="input-group">
                                 <label>Kalori (kcal) *</label>
-                                <input name="calories" type="number" className="input" defaultValue={editingCalorie?.calories} required />
+                                <input name="calories" type="number" className="input" defaultValue={editingCalorie.calories} required />
                             </div>
                             <div className="input-group">
                                 <label>Protein (g)</label>
-                                <input name="protein" type="number" className="input" defaultValue={editingCalorie?.protein || 0} />
+                                <input name="protein" type="number" className="input" defaultValue={editingCalorie.protein || 0} />
                             </div>
                             <div className="input-group">
                                 <label>Karbonhidrat (g)</label>
-                                <input name="carbs" type="number" className="input" defaultValue={editingCalorie?.carbs || 0} />
+                                <input name="carbs" type="number" className="input" defaultValue={editingCalorie.carbs || 0} />
                             </div>
                             <div className="input-group">
                                 <label>Yağ (g)</label>
-                                <input name="fat" type="number" className="input" defaultValue={editingCalorie?.fat || 0} />
+                                <input name="fat" type="number" className="input" defaultValue={editingCalorie.fat || 0} />
                             </div>
-                            <button type="submit" className="btn btn-primary">{editingCalorie ? 'Kaydet' : 'Ekle'}</button>
-                        </form>
-                    </div>
-                </div>
-            )}
-
-            {showWorkoutModal && (
-                <div className="modal-overlay" onClick={() => setShowWorkoutModal(false)}>
-                    <div className="modal" onClick={(e) => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h2 className="modal-title">Antrenman Ekle</h2>
-                            <button className="modal-close" onClick={() => setShowWorkoutModal(false)}>×</button>
-                        </div>
-                        <form onSubmit={handleAddWorkout}>
-                            <div className="input-group">
-                                <label>Tarih *</label>
-                                <input name="date" type="date" className="input" defaultValue={new Date().toISOString().split('T')[0]} required />
-                            </div>
-                            <div className="input-group">
-                                <label>Antrenman Türü *</label>
-                                <input name="type" type="text" className="input" placeholder="Örn: Koşu, Ağırlık, Yoga" required />
-                            </div>
-                            <div className="input-group">
-                                <label>Süre (dakika) *</label>
-                                <input name="duration" type="number" className="input" required />
-                            </div>
-                            <div className="input-group">
-                                <label>Yakılan Kalori (kcal) *</label>
-                                <input name="caloriesBurned" type="number" className="input" required />
-                            </div>
-                            <div className="input-group">
-                                <label>Notlar</label>
-                                <textarea name="notes" className="textarea" placeholder="Antrenman hakkında notlar..."></textarea>
-                            </div>
-                            <button type="submit" className="btn btn-primary">Ekle</button>
-                        </form>
-                    </div>
-                </div>
-            )}
-
-            {showMeasurementModal && (
-                <div className="modal-overlay" onClick={() => setShowMeasurementModal(false)}>
-                    <div className="modal" onClick={(e) => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h2 className="modal-title">Vücut Ölçümü Ekle</h2>
-                            <button className="modal-close" onClick={() => setShowMeasurementModal(false)}>×</button>
-                        </div>
-                        <form onSubmit={handleAddMeasurement}>
-                            <div className="input-group">
-                                <label>Tarih *</label>
-                                <input name="date" type="date" className="input" defaultValue={new Date().toISOString().split('T')[0]} required />
-                            </div>
-                            <div className="input-group">
-                                <label>Kilo (kg) *</label>
-                                <input name="weight" type="number" step="0.1" className="input" required />
-                            </div>
-                            <div className="input-group">
-                                <label>Yağ Oranı (%)</label>
-                                <input name="bodyFat" type="number" step="0.1" className="input" />
-                            </div>
-                            <div className="input-group">
-                                <label>Göğüs (cm)</label>
-                                <input name="chest" type="number" step="0.1" className="input" />
-                            </div>
-                            <div className="input-group">
-                                <label>Bel (cm)</label>
-                                <input name="waist" type="number" step="0.1" className="input" />
-                            </div>
-                            <div className="input-group">
-                                <label>Kalça (cm)</label>
-                                <input name="hips" type="number" step="0.1" className="input" />
-                            </div>
-                            <div className="input-group">
-                                <label>Kol (cm)</label>
-                                <input name="arms" type="number" step="0.1" className="input" />
-                            </div>
-                            <button type="submit" className="btn btn-primary">Ekle</button>
+                            <button type="submit" className="btn btn-primary">Kaydet</button>
                         </form>
                     </div>
                 </div>
