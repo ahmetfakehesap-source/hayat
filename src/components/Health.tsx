@@ -388,7 +388,7 @@ const Health: React.FC = () => {
             </div>
 
             {/* Stats Overview */}
-            <div className="health-stats grid-4">
+            <div className="health-stats" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.5rem' }}>
                 <div className="stat-box card">
                     <div className="stat-label">Bugünkü Kalori</div>
                     <div className="stat-value">{stats.todayCalories} / {settings.dailyCalorieGoal}</div>
