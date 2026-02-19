@@ -388,31 +388,35 @@ const Health: React.FC = () => {
             </div>
 
             {/* Stats Overview */}
-            <div className="health-stats" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.5rem' }}>
-                <div className="stat-box card">
-                    <div className="stat-label">Bugünkü Kalori</div>
-                    <div className="stat-value">{stats.todayCalories} / {settings.dailyCalorieGoal}</div>
-                    <div className="progress-bar">
-                        <div
-                            className="progress-fill"
-                            style={{ width: `${Math.min((stats.todayCalories / settings.dailyCalorieGoal) * 100, 100)}%` }}
-                        />
+            <div className="health-stats" style={{ marginBottom: '0.5rem' }}>
+                <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                    <div className="stat-box card" style={{ flex: 1 }}>
+                        <div className="stat-label">Bugünkü Kalori</div>
+                        <div className="stat-value">{stats.todayCalories} / {settings.dailyCalorieGoal}</div>
+                        <div className="progress-bar">
+                            <div
+                                className="progress-fill"
+                                style={{ width: `${Math.min((stats.todayCalories / settings.dailyCalorieGoal) * 100, 100)}%` }}
+                            />
+                        </div>
+                    </div>
+                    <div className="stat-box card" style={{ flex: 1 }}>
+                        <div className="stat-label">Bu Hafta Antrenman</div>
+                        <div className="stat-value">{stats.weekWorkouts} gün</div>
+                        <div className="stat-sublabel">{stats.totalWorkoutMinutes} dakika</div>
                     </div>
                 </div>
-                <div className="stat-box card">
-                    <div className="stat-label">Bu Hafta Antrenman</div>
-                    <div className="stat-value">{stats.weekWorkouts} gün</div>
-                    <div className="stat-sublabel">{stats.totalWorkoutMinutes} dakika</div>
-                </div>
-                <div className="stat-box card">
-                    <div className="stat-label">Yakılan Kalori</div>
-                    <div className="stat-value">{stats.totalCaloriesBurned} kcal</div>
-                    <div className="stat-sublabel">Bu hafta</div>
-                </div>
-                <div className="stat-box card">
-                    <div className="stat-label">Son Kilo</div>
-                    <div className="stat-value">{stats.latestWeight ? `${stats.latestWeight} kg` : '-'}</div>
-                    <div className="stat-sublabel">Güncel</div>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <div className="stat-box card" style={{ flex: 1 }}>
+                        <div className="stat-label">Yakılan Kalori</div>
+                        <div className="stat-value">{stats.totalCaloriesBurned} kcal</div>
+                        <div className="stat-sublabel">Bu hafta</div>
+                    </div>
+                    <div className="stat-box card" style={{ flex: 1 }}>
+                        <div className="stat-label">Son Kilo</div>
+                        <div className="stat-value">{stats.latestWeight ? `${stats.latestWeight} kg` : '-'}</div>
+                        <div className="stat-sublabel">Güncel</div>
+                    </div>
                 </div>
             </div>
 
