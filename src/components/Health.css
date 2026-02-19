@@ -387,11 +387,11 @@
         margin-bottom: 0.5rem;
     }
 
-    .header-actions {
+    .health-page .header-actions {
         width: 100%;
     }
 
-    .header-actions .btn {
+    .health-page .header-actions .btn {
         flex: 1;
         font-size: 0.813rem;
         padding: 0.5rem 0.75rem;

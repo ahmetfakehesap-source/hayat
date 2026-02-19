@@ -114,7 +114,7 @@
         flex-direction: column;
     }
 
-    .header-actions {
+    .journal-page .header-actions {
         flex-direction: column;
         width: 100%;
     }
