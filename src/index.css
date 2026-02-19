@@ -342,11 +342,11 @@ body {
 /* Responsive */
 @media (max-width: 768px) {
   .container {
-    padding: 0 0.75rem;
+    padding: 0 0.5rem;
   }
 
   .card {
-    padding: 0.875rem;
+    padding: 0.625rem;
   }
 
   .grid-2,
@@ -355,36 +355,36 @@ body {
   }
 
   .grid-4 {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.75rem;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.5rem;
   }
 
+  /* Hide page-header on mobile — already shown in top header bar */
   .page-header {
-    margin-bottom: 1.25rem;
-  }
-
-  .page-title {
-    font-size: 1.35rem;
-  }
-
-  .page-subtitle {
-    font-size: 0.85rem;
+    display: none;
   }
 
   .stat-box {
-    padding: 0.875rem 0.75rem;
+    padding: 0.5rem;
   }
 
   .stat-box .stat-value {
-    font-size: 1.35rem;
+    font-size: 1.1rem;
+    margin-bottom: 0.125rem;
   }
 
   .stat-box .stat-label {
-    font-size: 0.75rem;
+    font-size: 0.68rem;
+    margin-bottom: 0.125rem;
   }
 
   .stat-box .stat-sublabel {
-    font-size: 0.7rem;
+    font-size: 0.6rem;
+  }
+
+  .progress-bar {
+    height: 4px;
+    margin-top: 0.25rem;
   }
 
   .tabs {
@@ -392,6 +392,7 @@ body {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
+    margin-bottom: 0.75rem;
   }
 
   .tabs::-webkit-scrollbar {
@@ -399,8 +400,8 @@ body {
   }
 
   .tab {
-    padding: 0.625rem 0.875rem;
-    font-size: 0.813rem;
+    padding: 0.5rem 0.625rem;
+    font-size: 0.75rem;
     white-space: nowrap;
     flex-shrink: 0;
   }
@@ -408,7 +409,12 @@ body {
   .section-header {
     flex-direction: column;
     align-items: stretch;
-    gap: 0.75rem;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .section-header h2 {
+    font-size: 1rem;
   }
 
   .modal {
@@ -417,11 +423,11 @@ body {
   }
 
   .modal-header {
-    padding: 1rem;
+    padding: 0.75rem 1rem;
   }
 
   .modal form {
-    padding: 1rem;
+    padding: 0.75rem 1rem;
   }
 
   .input-group label {

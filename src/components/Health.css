@@ -384,7 +384,7 @@
 /* Responsive */
 @media (max-width: 768px) {
     .health-stats {
-        margin-bottom: 1.25rem;
+        margin-bottom: 0.5rem;
     }
 
     .header-actions {
