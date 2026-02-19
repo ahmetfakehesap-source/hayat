@@ -384,6 +384,9 @@
 /* Responsive */
 @media (max-width: 768px) {
     .health-stats {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.5rem !important;
         margin-bottom: 0.5rem;
     }
 
