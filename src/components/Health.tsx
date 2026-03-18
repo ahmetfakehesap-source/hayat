@@ -554,16 +554,16 @@ const Health: React.FC = () => {
                     </div>
 
                     {/* Calorie Entries */}
-                    <h3 className="subsection-title">Son Kayıtlar</h3>
+                    <h3 className="subsection-title">Bugünün Kayıtları</h3>
                     <div className="entries-list-modern">
-                        {data.calorieEntries.length === 0 ? (
+                        {data.calorieEntries.filter(c => c.date === new Date().toISOString().split('T')[0]).length === 0 ? (
                             <div className="empty-state card">
-                                <p>🍽️ Henüz kalori kaydı eklenmemiş</p>
+                                <p>🍽️ Bugün henüz kalori kaydı eklenmemiş</p>
                             </div>
                         ) : (
                             data.calorieEntries
+                                .filter(c => c.date === new Date().toISOString().split('T')[0])
                                 .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-                                .slice(0, 20)
                                 .map((entry) => {
                                     const handleFieldUpdate = (field: keyof CalorieEntry, value: any) => {
                                         const updatedEntry = { ...entry, [field]: value };
@@ -706,11 +706,11 @@ const Health: React.FC = () => {
                     </div>
 
                     {/* Measurement History */}
-                    {data.bodyMeasurements.length > 0 && (
+                    {data.bodyMeasurements.filter(m => m.date === new Date().toISOString().split('T')[0]).length > 0 && (
                         <div className="measurements-grid">
                             {data.bodyMeasurements
+                                .filter(m => m.date === new Date().toISOString().split('T')[0])
                                 .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-                                .slice(0, 10)
                                 .map((m) => (
                                     <div key={m.id} className="measurement-card card">
                                         <div className="measurement-header">
