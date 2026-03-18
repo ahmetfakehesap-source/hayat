@@ -16,6 +16,7 @@ const Health: React.FC = () => {
     const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [dateRange, setDateRange] = useState<'7' | '30' | '90' | 'all'>('30');
+    const [showMacroExpand, setShowMacroExpand] = useState(false);
 
     // Inline calorie form state
     const [calMeal, setCalMeal] = useState<CalorieEntry['meal']>('breakfast');
@@ -472,48 +473,78 @@ const Health: React.FC = () => {
                         <h2>Kalori Takibi</h2>
                     </div>
 
-                    {/* Inline Quick-Add Calorie */}
-                    <div className="inline-form">
-                        <div className="inline-form-row">
-                            <div className="inline-field field-select">
-                                <label>Öğün</label>
-                                <select value={calMeal} onChange={(e) => setCalMeal(e.target.value as CalorieEntry['meal'])}>
-                                    <option value="breakfast">🌅 Kahvaltı</option>
-                                    <option value="lunch">🌞 Öğle</option>
-                                    <option value="dinner">🌙 Akşam</option>
-                                    <option value="snack">🍎 Ara Öğün</option>
-                                </select>
-                            </div>
-                            <div className="inline-field">
-                                <label>Yemek/İçecek</label>
+                    {/* Modern Calorie Add Card */}
+                    <div className="calorie-add-card">
+                        {/* Meal Type Selector */}
+                        <div className="meal-selector">
+                            {[
+                                { value: 'breakfast', emoji: '🌅', label: 'Kahvaltı' },
+                                { value: 'lunch', emoji: '🌞', label: 'Öğle' },
+                                { value: 'dinner', emoji: '🌙', label: 'Akşam' },
+                                { value: 'snack', emoji: '🍎', label: 'Ara Öğün' },
+                            ].map((meal) => (
+                                <button
+                                    key={meal.value}
+                                    className={`meal-btn ${calMeal === meal.value ? 'active' : ''}`}
+                                    onClick={() => setCalMeal(meal.value as CalorieEntry['meal'])}
+                                >
+                                    <span className="meal-btn-emoji">{meal.emoji}</span>
+                                    <span className="meal-btn-label">{meal.label}</span>
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* Food + Calorie Input Row */}
+                        <div className="calorie-input-row">
+                            <div className="calorie-input-field food-field">
+                                <span className="input-icon">🍽️</span>
                                 <input
                                     type="text"
-                                    placeholder="Yulaf + Muz..."
+                                    placeholder="Ne yedin? (örn: Yulaf + Muz)"
                                     value={calFood}
                                     onChange={(e) => setCalFood(e.target.value)}
                                     onKeyDown={(e) => { if (e.key === 'Enter') handleAddCalorieInline(); }}
                                 />
                             </div>
-                            <div className="inline-field field-sm">
-                                <label>Kalori</label>
-                                <input type="number" placeholder="kcal" value={calCalories} onChange={(e) => setCalCalories(e.target.value)} />
-                            </div>
-                            <button className="btn-add" onClick={handleAddCalorieInline}>➕ Ekle</button>
-                        </div>
-                        <div className="inline-form-row">
-                            <div className="inline-field field-sm">
-                                <label>🥩 Protein (g)</label>
-                                <input type="number" placeholder="0" value={calProtein} onChange={(e) => setCalProtein(e.target.value)} />
-                            </div>
-                            <div className="inline-field field-sm">
-                                <label>🍞 Karb (g)</label>
-                                <input type="number" placeholder="0" value={calCarbs} onChange={(e) => setCalCarbs(e.target.value)} />
-                            </div>
-                            <div className="inline-field field-sm">
-                                <label>🧈 Yağ (g)</label>
-                                <input type="number" placeholder="0" value={calFat} onChange={(e) => setCalFat(e.target.value)} />
+                            <div className="calorie-input-field kcal-field">
+                                <input
+                                    type="number"
+                                    placeholder="0"
+                                    value={calCalories}
+                                    onChange={(e) => setCalCalories(e.target.value)}
+                                />
+                                <span className="input-suffix">kcal</span>
                             </div>
                         </div>
+
+                        {/* Expandable Macros */}
+                        <button className="macro-expand-btn" onClick={() => setShowMacroExpand(!showMacroExpand)}>
+                            {showMacroExpand ? '▲ Makroları Gizle' : '▼ Makro Bilgisi Ekle (Protein, Karb, Yağ)'}
+                        </button>
+                        {showMacroExpand && (
+                            <div className="macro-inputs-row">
+                                <div className="macro-input-field">
+                                    <span className="macro-input-icon">🥩</span>
+                                    <input type="number" placeholder="0" value={calProtein} onChange={(e) => setCalProtein(e.target.value)} />
+                                    <span className="macro-input-label">Protein (g)</span>
+                                </div>
+                                <div className="macro-input-field">
+                                    <span className="macro-input-icon">🍞</span>
+                                    <input type="number" placeholder="0" value={calCarbs} onChange={(e) => setCalCarbs(e.target.value)} />
+                                    <span className="macro-input-label">Karb (g)</span>
+                                </div>
+                                <div className="macro-input-field">
+                                    <span className="macro-input-icon">🧈</span>
+                                    <input type="number" placeholder="0" value={calFat} onChange={(e) => setCalFat(e.target.value)} />
+                                    <span className="macro-input-label">Yağ (g)</span>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Add Button */}
+                        <button className="calorie-add-btn" onClick={handleAddCalorieInline}>
+                            ➕ Kaydet
+                        </button>
                     </div>
 
                     {/* Macros */}

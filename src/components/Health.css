@@ -1370,3 +1370,282 @@
         width: 50px;
     }
 }
+
+/* ===== Redesigned Calorie Input Form ===== */
+.calorie-add-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+/* Meal Type Selector */
+.meal-selector {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.625rem;
+    margin-bottom: 1.25rem;
+}
+
+.meal-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.875rem 0.5rem;
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    background: var(--bg-primary);
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.meal-btn:hover {
+    border-color: var(--color-primary);
+    background: var(--bg-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+}
+
+.meal-btn.active {
+    border-color: var(--color-primary);
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.12), rgba(139, 92, 246, 0.08));
+    box-shadow: 0 4px 16px rgba(59, 130, 246, 0.2);
+    transform: translateY(-2px);
+}
+
+.meal-btn-emoji {
+    font-size: 1.75rem;
+    line-height: 1;
+}
+
+.meal-btn-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    letter-spacing: 0.02em;
+}
+
+.meal-btn.active .meal-btn-label {
+    color: var(--color-primary);
+}
+
+/* Food + Calorie Input Row */
+.calorie-input-row {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.calorie-input-field {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--bg-primary);
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    padding: 0 1rem;
+    transition: all 0.2s ease;
+}
+
+.calorie-input-field:focus-within {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.calorie-input-field.food-field {
+    flex: 1;
+}
+
+.calorie-input-field.kcal-field {
+    flex: 0 0 130px;
+}
+
+.calorie-input-field .input-icon {
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.calorie-input-field input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 0.875rem 0;
+    font-size: 0.938rem;
+    color: var(--text-primary);
+    outline: none;
+    min-width: 0;
+}
+
+.calorie-input-field .input-suffix {
+    font-size: 0.813rem;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    flex-shrink: 0;
+}
+
+.calorie-input-field.kcal-field input {
+    text-align: center;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--color-primary);
+}
+
+/* Macro Expand Button */
+.macro-expand-btn {
+    width: 100%;
+    padding: 0.625rem;
+    background: transparent;
+    border: 1px dashed var(--border-color);
+    border-radius: 8px;
+    color: var(--text-tertiary);
+    font-size: 0.813rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-bottom: 0.75rem;
+}
+
+.macro-expand-btn:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    background: rgba(59, 130, 246, 0.04);
+}
+
+/* Macro Input Fields */
+.macro-inputs-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.625rem;
+    margin-bottom: 0.75rem;
+    animation: fadeIn 0.2s ease;
+}
+
+.macro-input-field {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.75rem;
+    background: var(--bg-tertiary);
+    border-radius: 10px;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.macro-input-field:focus-within {
+    border-color: var(--color-primary);
+    background: var(--bg-primary);
+}
+
+.macro-input-icon {
+    font-size: 1.375rem;
+}
+
+.macro-input-field input {
+    border: none;
+    background: transparent;
+    width: 60px;
+    text-align: center;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    outline: none;
+    padding: 0.25rem 0;
+}
+
+.macro-input-label {
+    font-size: 0.688rem;
+    color: var(--text-tertiary);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+/* Add Button */
+.calorie-add-btn {
+    width: 100%;
+    padding: 0.875rem;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    letter-spacing: 0.02em;
+}
+
+.calorie-add-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.35);
+}
+
+.calorie-add-btn:active {
+    transform: translateY(0);
+}
+
+/* Remove number input arrows for calorie form */
+.calorie-input-field input::-webkit-outer-spin-button,
+.calorie-input-field input::-webkit-inner-spin-button,
+.macro-input-field input::-webkit-outer-spin-button,
+.macro-input-field input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    appearance: none;
+    margin: 0;
+}
+
+.calorie-input-field input[type=number],
+.macro-input-field input[type=number] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+/* Mobile responsive for calorie form */
+@media (max-width: 768px) {
+    .calorie-add-card {
+        padding: 1rem;
+        border-radius: 12px;
+    }
+
+    .meal-selector {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.5rem;
+    }
+
+    .meal-btn {
+        padding: 0.75rem 0.25rem;
+    }
+
+    .meal-btn-emoji {
+        font-size: 1.5rem;
+    }
+
+    .meal-btn-label {
+        font-size: 0.65rem;
+    }
+
+    .calorie-input-row {
+        flex-direction: column;
+    }
+
+    .calorie-input-field.kcal-field {
+        flex: 1;
+    }
+
+    .macro-inputs-row {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.5rem;
+    }
+
+    .macro-input-field {
+        padding: 0.625rem 0.5rem;
+    }
+
+    .macro-input-field input {
+        width: 50px;
+        font-size: 1rem;
+    }
+}
