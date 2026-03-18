@@ -584,12 +584,14 @@ const Health: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Calorie Entries */}
-                    <h3 className="subsection-title">Bugünün Kayıtları</h3>
-                    <div className="entries-list-modern">
+                    {/* Calorie Entries - Modern */}
+                    <h3 className="subsection-title">📋 Bugünün Kayıtları</h3>
+                    <div className="today-records-container">
                         {data.calorieEntries.filter(c => c.date === new Date().toISOString().split('T')[0]).length === 0 ? (
-                            <div className="empty-state card">
-                                <p>🍽️ Bugün henüz kalori kaydı eklenmemiş</p>
+                            <div className="empty-state-modern">
+                                <span className="empty-icon">🍽️</span>
+                                <p>Bugün henüz bir şey kaydetmedin</p>
+                                <span className="empty-hint">Yukarıdan yemek ekleyerek başla!</span>
                             </div>
                         ) : (
                             data.calorieEntries
@@ -605,79 +607,43 @@ const Health: React.FC = () => {
                                         });
                                     };
 
+                                    const mealColors: Record<string, string> = {
+                                        breakfast: '#f59e0b',
+                                        lunch: '#f97316',
+                                        dinner: '#8b5cf6',
+                                        snack: '#10b981',
+                                    };
+
                                     return (
-                                        <div key={entry.id} className="entry-card-modern">
-                                            <div className="entry-card-header">
-                                                <div className="entry-meta">
-                                                    <span className="entry-date-modern">{formatDate(entry.date)}</span>
-                                                    <span className="entry-time-modern">🕐 {entry.time || '00:00'}</span>
-                                                    <span className="entry-meal-badge">
-                                                        {entry.meal === 'breakfast' && '🌅 Kahvaltı'}
-                                                        {entry.meal === 'lunch' && '🌞 Öğle'}
-                                                        {entry.meal === 'dinner' && '🌙 Akşam'}
-                                                        {entry.meal === 'snack' && '🍎 Ara Öğün'}
+                                        <div key={entry.id} className="record-card" style={{ borderLeft: `4px solid ${mealColors[entry.meal] || '#3b82f6'}` }}>
+                                            <div className="record-card-top">
+                                                <div className="record-meal-info">
+                                                    <span className="record-meal-emoji">
+                                                        {entry.meal === 'breakfast' && '🌅'}
+                                                        {entry.meal === 'lunch' && '🌞'}
+                                                        {entry.meal === 'dinner' && '🌙'}
+                                                        {entry.meal === 'snack' && '🍎'}
                                                     </span>
+                                                    <div className="record-meal-text">
+                                                        <div
+                                                            className="record-food-name"
+                                                            contentEditable
+                                                            suppressContentEditableWarning
+                                                            onBlur={(e) => handleFieldUpdate('food', e.currentTarget.textContent || '')}
+                                                            onKeyDown={(e) => {
+                                                                if (e.key === 'Enter') {
+                                                                    e.preventDefault();
+                                                                    e.currentTarget.blur();
+                                                                }
+                                                            }}
+                                                        >
+                                                            {entry.food}
+                                                        </div>
+                                                        <span className="record-time">🕐 {entry.time || '00:00'}</span>
+                                                    </div>
                                                 </div>
-                                                <button
-                                                    className="btn-delete-modern"
-                                                    onClick={() => handleDeleteCalorie(entry.id)}
-                                                    title="Sil"
-                                                >
-                                                    🗑️
-                                                </button>
-                                            </div>
-
-                                            <div className="entry-content-row">
-                                                <div
-                                                    className="entry-food-modern"
-                                                    contentEditable
-                                                    suppressContentEditableWarning
-                                                    onBlur={(e) => handleFieldUpdate('food', e.currentTarget.textContent || '')}
-                                                    onKeyDown={(e) => {
-                                                        if (e.key === 'Enter') {
-                                                            e.preventDefault();
-                                                            e.currentTarget.blur();
-                                                        }
-                                                    }}
-                                                >
-                                                    {entry.food}
-                                                </div>
-
-                                                <div className="entry-macros-modern">
-                                                    <div className="macro-editable">
-                                                        <span className="macro-icon-modern">🥩</span>
-                                                        <input
-                                                            type="number"
-                                                            className="macro-input"
-                                                            value={entry.protein}
-                                                            onChange={(e) => handleFieldUpdate('protein', Number(e.target.value))}
-                                                            onFocus={(e) => e.target.select()}
-                                                        />
-                                                        <span className="macro-unit">g</span>
-                                                    </div>
-                                                    <div className="macro-editable">
-                                                        <span className="macro-icon-modern">🍞</span>
-                                                        <input
-                                                            type="number"
-                                                            className="macro-input"
-                                                            value={entry.carbs}
-                                                            onChange={(e) => handleFieldUpdate('carbs', Number(e.target.value))}
-                                                            onFocus={(e) => e.target.select()}
-                                                        />
-                                                        <span className="macro-unit">g</span>
-                                                    </div>
-                                                    <div className="macro-editable">
-                                                        <span className="macro-icon-modern">🧈</span>
-                                                        <input
-                                                            type="number"
-                                                            className="macro-input"
-                                                            value={entry.fat}
-                                                            onChange={(e) => handleFieldUpdate('fat', Number(e.target.value))}
-                                                            onFocus={(e) => e.target.select()}
-                                                        />
-                                                        <span className="macro-unit">g</span>
-                                                    </div>
-                                                    <div className="calorie-editable">
+                                                <div className="record-right">
+                                                    <div className="record-calorie-badge">
                                                         <input
                                                             type="number"
                                                             className="calorie-input"
@@ -685,8 +651,32 @@ const Health: React.FC = () => {
                                                             onChange={(e) => handleFieldUpdate('calories', Number(e.target.value))}
                                                             onFocus={(e) => e.target.select()}
                                                         />
-                                                        <span className="calorie-unit">kcal</span>
+                                                        <span>kcal</span>
                                                     </div>
+                                                    <button
+                                                        className="record-delete-btn"
+                                                        onClick={() => handleDeleteCalorie(entry.id)}
+                                                        title="Sil"
+                                                    >
+                                                        ✕
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div className="record-macros-row">
+                                                <div className="record-macro-pill">
+                                                    <span>🥩</span>
+                                                    <input type="number" className="macro-input" value={entry.protein} onChange={(e) => handleFieldUpdate('protein', Number(e.target.value))} onFocus={(e) => e.target.select()} />
+                                                    <span className="macro-unit">g</span>
+                                                </div>
+                                                <div className="record-macro-pill">
+                                                    <span>🍞</span>
+                                                    <input type="number" className="macro-input" value={entry.carbs} onChange={(e) => handleFieldUpdate('carbs', Number(e.target.value))} onFocus={(e) => e.target.select()} />
+                                                    <span className="macro-unit">g</span>
+                                                </div>
+                                                <div className="record-macro-pill">
+                                                    <span>🧈</span>
+                                                    <input type="number" className="macro-input" value={entry.fat} onChange={(e) => handleFieldUpdate('fat', Number(e.target.value))} onFocus={(e) => e.target.select()} />
+                                                    <span className="macro-unit">g</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -695,62 +685,105 @@ const Health: React.FC = () => {
                         )}
                     </div>
 
-                    {/* Inline Quick-Add Measurement */}
-                    <h3 className="subsection-title">Vücut Ölçümleri</h3>
-                    <div className="inline-form">
-                        <div className="inline-form-row">
-                            <div className="inline-field field-sm">
-                                <label>Kilo (kg)</label>
+                    {/* Body Measurements - Modern */}
+                    <h3 className="subsection-title">📏 Vücut Ölçümleri</h3>
+                    <div className="measurement-add-card">
+                        <div className="measurement-input-row">
+                            <div className="measurement-input-field">
+                                <span className="meas-input-icon">⚖️</span>
                                 <input type="number" step="0.1" placeholder="0" value={measWeight} onChange={(e) => setMeasWeight(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') handleAddMeasurementInline(); }} />
+                                <span className="meas-input-suffix">kg</span>
                             </div>
-                            <div className="inline-field field-sm">
-                                <label>Yağ %</label>
+                            <div className="measurement-input-field">
+                                <span className="meas-input-icon">📊</span>
                                 <input type="number" step="0.1" placeholder="0" value={measBodyFat} onChange={(e) => setMeasBodyFat(e.target.value)} />
+                                <span className="meas-input-suffix">% yağ</span>
                             </div>
-                            <button className="btn-add" onClick={handleAddMeasurementInline}>⚖️ Kaydet</button>
                         </div>
-                        <button className="expand-toggle" onClick={() => setShowMeasExpand(!showMeasExpand)}>
-                            {showMeasExpand ? '▲ Gizle' : '▼ Detaylı Ölçüm'}
+
+                        <button className="macro-expand-btn" onClick={() => setShowMeasExpand(!showMeasExpand)}>
+                            {showMeasExpand ? '▲ Detayları Gizle' : '▼ Detaylı Ölçüm (Göğüs, Bel, Kalça, Kol)'}
                         </button>
                         {showMeasExpand && (
-                            <div className="expand-area">
-                                <div className="inline-form-row">
-                                    <div className="inline-field field-sm">
-                                        <label>Göğüs (cm)</label>
-                                        <input type="number" step="0.1" placeholder="0" value={measChest} onChange={(e) => setMeasChest(e.target.value)} />
-                                    </div>
-                                    <div className="inline-field field-sm">
-                                        <label>Bel (cm)</label>
-                                        <input type="number" step="0.1" placeholder="0" value={measWaist} onChange={(e) => setMeasWaist(e.target.value)} />
-                                    </div>
-                                    <div className="inline-field field-sm">
-                                        <label>Kalça (cm)</label>
-                                        <input type="number" step="0.1" placeholder="0" value={measHips} onChange={(e) => setMeasHips(e.target.value)} />
-                                    </div>
-                                    <div className="inline-field field-sm">
-                                        <label>Kol (cm)</label>
-                                        <input type="number" step="0.1" placeholder="0" value={measArms} onChange={(e) => setMeasArms(e.target.value)} />
-                                    </div>
+                            <div className="measurement-detail-row">
+                                <div className="meas-detail-field">
+                                    <span className="meas-detail-icon">📐</span>
+                                    <input type="number" step="0.1" placeholder="0" value={measChest} onChange={(e) => setMeasChest(e.target.value)} />
+                                    <span className="meas-detail-label">Göğüs (cm)</span>
+                                </div>
+                                <div className="meas-detail-field">
+                                    <span className="meas-detail-icon">📏</span>
+                                    <input type="number" step="0.1" placeholder="0" value={measWaist} onChange={(e) => setMeasWaist(e.target.value)} />
+                                    <span className="meas-detail-label">Bel (cm)</span>
+                                </div>
+                                <div className="meas-detail-field">
+                                    <span className="meas-detail-icon">📐</span>
+                                    <input type="number" step="0.1" placeholder="0" value={measHips} onChange={(e) => setMeasHips(e.target.value)} />
+                                    <span className="meas-detail-label">Kalça (cm)</span>
+                                </div>
+                                <div className="meas-detail-field">
+                                    <span className="meas-detail-icon">💪</span>
+                                    <input type="number" step="0.1" placeholder="0" value={measArms} onChange={(e) => setMeasArms(e.target.value)} />
+                                    <span className="meas-detail-label">Kol (cm)</span>
                                 </div>
                             </div>
                         )}
+
+                        <button className="calorie-add-btn" onClick={handleAddMeasurementInline}>
+                            ⚖️ Ölçüm Kaydet
+                        </button>
                     </div>
 
-                    {/* Measurement History */}
+                    {/* Measurement History - Modern */}
                     {data.bodyMeasurements.filter(m => m.date === new Date().toISOString().split('T')[0]).length > 0 && (
-                        <div className="measurements-grid">
+                        <div className="today-records-container">
                             {data.bodyMeasurements
                                 .filter(m => m.date === new Date().toISOString().split('T')[0])
                                 .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
                                 .map((m) => (
-                                    <div key={m.id} className="measurement-card card">
-                                        <div className="measurement-header">
-                                            <div className="measurement-date">{formatDate(m.date)}</div>
-                                            <button className="btn-icon delete" onClick={() => handleDeleteMeasurement(m.id)}>🗑️</button>
+                                    <div key={m.id} className="record-card" style={{ borderLeft: '4px solid #10b981' }}>
+                                        <div className="record-card-top">
+                                            <div className="record-meal-info">
+                                                <span className="record-meal-emoji">⚖️</span>
+                                                <div className="record-meal-text">
+                                                    <div className="record-food-name">Vücut Ölçümü</div>
+                                                    <span className="record-time">{formatDate(m.date)}</span>
+                                                </div>
+                                            </div>
+                                            <div className="record-right">
+                                                <div className="record-calorie-badge" style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}>
+                                                    <span style={{ fontWeight: 700, fontSize: '1.125rem' }}>{m.weight}</span>
+                                                    <span>kg</span>
+                                                </div>
+                                                <button className="record-delete-btn" onClick={() => handleDeleteMeasurement(m.id)} title="Sil">✕</button>
+                                            </div>
                                         </div>
-                                        <div className="measurement-main">
-                                            <strong>{m.weight} kg</strong>
-                                            {m.bodyFat && <span>{m.bodyFat}% yağ</span>}
+                                        <div className="record-macros-row">
+                                            {m.bodyFat && (
+                                                <div className="record-macro-pill">
+                                                    <span>📊</span>
+                                                    <span style={{ fontWeight: 600 }}>{m.bodyFat}%</span>
+                                                    <span className="macro-unit">yağ</span>
+                                                </div>
+                                            )}
+                                            {m.measurements?.chest && (
+                                                <div className="record-macro-pill">
+                                                    <span style={{ fontWeight: 600 }}>{m.measurements.chest}</span>
+                                                    <span className="macro-unit">göğüs</span>
+                                                </div>
+                                            )}
+                                            {m.measurements?.waist && (
+                                                <div className="record-macro-pill">
+                                                    <span style={{ fontWeight: 600 }}>{m.measurements.waist}</span>
+                                                    <span className="macro-unit">bel</span>
+                                                </div>
+                                            )}
+                                            {m.measurements?.arms && (
+                                                <div className="record-macro-pill">
+                                                    <span style={{ fontWeight: 600 }}>{m.measurements.arms}</span>
+                                                    <span className="macro-unit">kol</span>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 ))}

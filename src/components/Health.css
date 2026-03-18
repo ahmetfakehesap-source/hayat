@@ -1649,3 +1649,379 @@
         font-size: 1rem;
     }
 }
+
+/* ===== Record Cards (Today's Records) ===== */
+.today-records-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.record-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.record-card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    transform: translateY(-1px);
+}
+
+.record-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.record-meal-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1;
+    min-width: 0;
+}
+
+.record-meal-emoji {
+    font-size: 1.75rem;
+    flex-shrink: 0;
+}
+
+.record-meal-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    min-width: 0;
+}
+
+.record-food-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    cursor: text;
+    outline: none;
+    border-radius: 4px;
+    padding: 0.125rem 0.25rem;
+    margin: -0.125rem -0.25rem;
+    transition: background 0.2s ease;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.record-food-name:hover {
+    background: var(--bg-tertiary);
+}
+
+.record-food-name:focus {
+    background: var(--bg-tertiary);
+    box-shadow: 0 0 0 2px var(--color-primary);
+}
+
+.record-time {
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+}
+
+.record-right {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+.record-calorie-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--color-primary);
+    padding: 0.375rem 0.75rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.record-calorie-badge .calorie-input {
+    width: 45px;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: inherit;
+    background: transparent;
+    border: none;
+    outline: none;
+    text-align: center;
+    padding: 0;
+}
+
+.record-delete-btn {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    opacity: 0.5;
+}
+
+.record-delete-btn:hover {
+    opacity: 1;
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.2);
+}
+
+.record-macros-row {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.record-macro-pill {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    background: var(--bg-tertiary);
+    padding: 0.375rem 0.625rem;
+    border-radius: 8px;
+    font-size: 0.813rem;
+    transition: all 0.2s ease;
+}
+
+.record-macro-pill:hover {
+    background: var(--bg-hover);
+}
+
+.record-macro-pill .macro-input {
+    width: 35px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    background: transparent;
+    border: none;
+    outline: none;
+    text-align: center;
+    padding: 0;
+}
+
+.record-macro-pill .macro-unit {
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+    font-weight: 500;
+}
+
+/* Empty State - Modern */
+.empty-state-modern {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 2.5rem 1rem;
+    background: var(--bg-card);
+    border: 2px dashed var(--border-color);
+    border-radius: 16px;
+    text-align: center;
+}
+
+.empty-icon {
+    font-size: 2.5rem;
+}
+
+.empty-state-modern p {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.empty-hint {
+    font-size: 0.813rem;
+    color: var(--text-tertiary);
+}
+
+/* ===== Measurement Add Card ===== */
+.measurement-add-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.measurement-input-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.measurement-input-field {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--bg-primary);
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    padding: 0 1rem;
+    transition: all 0.2s ease;
+}
+
+.measurement-input-field:focus-within {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.meas-input-icon {
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.measurement-input-field input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 0.875rem 0;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    outline: none;
+    text-align: center;
+    min-width: 0;
+}
+
+.meas-input-suffix {
+    font-size: 0.813rem;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    flex-shrink: 0;
+}
+
+.measurement-detail-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.625rem;
+    margin-bottom: 0.75rem;
+    animation: fadeIn 0.2s ease;
+}
+
+.meas-detail-field {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.75rem;
+    background: var(--bg-tertiary);
+    border-radius: 10px;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.meas-detail-field:focus-within {
+    border-color: var(--color-primary);
+    background: var(--bg-primary);
+}
+
+.meas-detail-icon {
+    font-size: 1.375rem;
+}
+
+.meas-detail-field input {
+    border: none;
+    background: transparent;
+    width: 60px;
+    text-align: center;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    outline: none;
+    padding: 0.25rem 0;
+}
+
+.meas-detail-label {
+    font-size: 0.688rem;
+    color: var(--text-tertiary);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+/* Remove arrows from number inputs */
+.measurement-input-field input::-webkit-outer-spin-button,
+.measurement-input-field input::-webkit-inner-spin-button,
+.meas-detail-field input::-webkit-outer-spin-button,
+.meas-detail-field input::-webkit-inner-spin-button,
+.record-calorie-badge input::-webkit-outer-spin-button,
+.record-calorie-badge input::-webkit-inner-spin-button,
+.record-macro-pill input::-webkit-outer-spin-button,
+.record-macro-pill input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    appearance: none;
+    margin: 0;
+}
+
+.measurement-input-field input[type=number],
+.meas-detail-field input[type=number],
+.record-calorie-badge input[type=number],
+.record-macro-pill input[type=number] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .record-card {
+        padding: 0.875rem 1rem;
+    }
+
+    .record-meal-emoji {
+        font-size: 1.5rem;
+    }
+
+    .record-food-name {
+        font-size: 0.938rem;
+    }
+
+    .record-card-top {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .record-macros-row {
+        gap: 0.375rem;
+    }
+
+    .record-macro-pill {
+        padding: 0.25rem 0.5rem;
+    }
+
+    .measurement-add-card {
+        padding: 1rem;
+    }
+
+    .measurement-input-row {
+        grid-template-columns: 1fr;
+    }
+
+    .measurement-detail-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .meas-detail-field {
+        padding: 0.625rem 0.5rem;
+    }
+
+    .meas-detail-field input {
+        width: 50px;
+        font-size: 1rem;
+    }
+}
