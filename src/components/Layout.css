@@ -95,6 +95,37 @@
     padding: 1rem 0;
 }
 
+.user-profile {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1.5rem;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    border-radius: var(--border-radius-sm);
+}
+
+.user-profile:hover {
+    background: var(--bg-hover);
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.user-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.user-logout {
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+}
+
 /* Main Content */
 .main-content {
     flex: 1;
