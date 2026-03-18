@@ -875,10 +875,11 @@ const Health: React.FC = () => {
             {/* Recipes Tab */}
             {activeTab === 'recipes' && (
                 <div className="tab-content fade-in">
-                    <div className="section-header">
-                        <h2>Yemek Tariflerim</h2>
+                    <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                        <h2>📖 Yemek Tariflerim</h2>
                         <button
-                            className="btn btn-primary"
+                            className="calorie-add-btn"
+                            style={{ width: 'auto', padding: '0.625rem 1.25rem', fontSize: '0.875rem' }}
                             onClick={() => {
                                 setEditingRecipe(null);
                                 setShowRecipeModal(true);
@@ -888,49 +889,64 @@ const Health: React.FC = () => {
                         </button>
                     </div>
 
-                    <div className="search-box">
+                    {/* Search */}
+                    <div className="modern-search-box">
+                        <span className="search-icon">🔍</span>
                         <input
                             type="text"
-                            className="input"
-                            placeholder="🔍 Tarif ara..."
+                            placeholder="Tarif veya kategori ara..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
 
-                    <div className="recipes-grid">
+                    <div className="modern-recipes-grid">
                         {filteredRecipes.length === 0 ? (
-                            <div className="empty-state card">
-                                <p>📖 {searchQuery ? 'Tarif bulunamadı' : 'Henüz tarif eklenmemiş'}</p>
+                            <div className="empty-state-modern">
+                                <span className="empty-icon">📖</span>
+                                <p>{searchQuery ? 'Tarif bulunamadı' : 'Henüz tarif eklenmemiş'}</p>
+                                <span className="empty-hint">Sağlıklı tariflerini buraya ekle!</span>
                             </div>
                         ) : (
                             filteredRecipes.map((recipe) => (
-                                <div key={recipe.id} className="recipe-card card">
-                                    <div className="recipe-header">
-                                        <h3 className="recipe-title">{recipe.title}</h3>
+                                <div key={recipe.id} className="modern-recipe-card">
+                                    <div className="modern-recipe-top">
+                                        <div className="modern-recipe-title-area">
+                                            <h3 className="modern-recipe-title">{recipe.title}</h3>
+                                            {recipe.category && (
+                                                <span className="modern-recipe-category">{recipe.category}</span>
+                                            )}
+                                        </div>
                                         <button
-                                            className={`btn-fav ${recipe.favorite ? 'active' : ''}`}
+                                            className={`modern-fav-btn ${recipe.favorite ? 'active' : ''}`}
                                             onClick={() => handleToggleFavorite(recipe.id)}
                                         >
                                             {recipe.favorite ? '⭐' : '☆'}
                                         </button>
                                     </div>
-                                    {recipe.category && (
-                                        <div className="recipe-category">{recipe.category}</div>
-                                    )}
-                                    <div className="recipe-info">
-                                        {recipe.prepTime && <span>⏱️ {recipe.prepTime} dk</span>}
-                                        <span>🔥 {recipe.calories} kcal</span>
+
+                                    <div className="modern-recipe-stats">
+                                        {recipe.prepTime && (
+                                            <div className="recipe-stat-pill">
+                                                <span>⏱️</span>
+                                                <span>{recipe.prepTime} dk</span>
+                                            </div>
+                                        )}
+                                        <div className="recipe-stat-pill calorie">
+                                            <span>🔥</span>
+                                            <span>{recipe.calories} kcal</span>
+                                        </div>
                                     </div>
-                                    <div className="recipe-actions">
+
+                                    <div className="modern-recipe-actions">
                                         <button
-                                            className="btn btn-secondary btn-sm"
+                                            className="recipe-action-btn view"
                                             onClick={() => setSelectedRecipe(recipe)}
                                         >
                                             👁️ Görüntüle
                                         </button>
                                         <button
-                                            className="btn btn-secondary btn-sm"
+                                            className="recipe-action-btn edit"
                                             onClick={() => {
                                                 setEditingRecipe(recipe);
                                                 setShowRecipeModal(true);
@@ -939,10 +955,10 @@ const Health: React.FC = () => {
                                             ✏️ Düzenle
                                         </button>
                                         <button
-                                            className="btn btn-secondary btn-sm delete"
+                                            className="recipe-action-btn delete"
                                             onClick={() => handleDeleteRecipe(recipe.id)}
                                         >
-                                            🗑️
+                                            ✕
                                         </button>
                                     </div>
                                 </div>
@@ -955,58 +971,63 @@ const Health: React.FC = () => {
             {/* Products Tab */}
             {activeTab === 'products' && (
                 <div className="tab-content fade-in">
-                    <div className="section-header">
-                        <h2>Sağlıklı Ürünler</h2>
-                        <button className="btn btn-primary" onClick={() => setShowProductModal(true)}>
+                    <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                        <h2>🛒 Sağlıklı Ürünler</h2>
+                        <button
+                            className="calorie-add-btn"
+                            style={{ width: 'auto', padding: '0.625rem 1.25rem', fontSize: '0.875rem' }}
+                            onClick={() => setShowProductModal(true)}
+                        >
                             ➕ Ürün Ekle
                         </button>
                     </div>
 
-                    <div className="search-box">
+                    {/* Search */}
+                    <div className="modern-search-box">
+                        <span className="search-icon">🔍</span>
                         <input
                             type="text"
-                            className="input"
-                            placeholder="🔍 Ürün ara..."
+                            placeholder="Ürün veya kategori ara..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
 
-                    <div className="products-table">
+                    <div className="modern-products-grid">
                         {filteredProducts.length === 0 ? (
-                            <div className="empty-state card">
-                                <p>🛒 {searchQuery ? 'Ürün bulunamadı' : 'Henüz ürün eklenmemiş'}</p>
+                            <div className="empty-state-modern">
+                                <span className="empty-icon">🛒</span>
+                                <p>{searchQuery ? 'Ürün bulunamadı' : 'Henüz ürün eklenmemiş'}</p>
+                                <span className="empty-hint">Sağlıklı ürünlerini buraya ekle!</span>
                             </div>
                         ) : (
-                            <table className="table">
-                                <thead>
-                                    <tr>
-                                        <th>Ürün Adı</th>
-                                        <th>Kategori</th>
-                                        <th>Nerede Bulunur</th>
-                                        <th>Fiyat</th>
-                                        <th></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {filteredProducts.map((product) => (
-                                        <tr key={product.id}>
-                                            <td>{product.name}</td>
-                                            <td>{product.category}</td>
-                                            <td>{product.location}</td>
-                                            <td>₺{product.price.toFixed(2)}</td>
-                                            <td>
-                                                <button
-                                                    className="btn-icon delete"
-                                                    onClick={() => handleDeleteProduct(product.id)}
-                                                >
-                                                    🗑️
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                            filteredProducts.map((product) => (
+                                <div key={product.id} className="modern-product-card">
+                                    <div className="product-card-top">
+                                        <div className="product-info">
+                                            <h3 className="product-name">{product.name}</h3>
+                                            <span className="product-category-badge">{product.category}</span>
+                                        </div>
+                                        <button
+                                            className="record-delete-btn"
+                                            onClick={() => handleDeleteProduct(product.id)}
+                                            title="Sil"
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
+                                    <div className="product-details-row">
+                                        <div className="product-detail-pill">
+                                            <span>📍</span>
+                                            <span>{product.location}</span>
+                                        </div>
+                                        <div className="product-detail-pill price">
+                                            <span>💰</span>
+                                            <span>₺{product.price.toFixed(2)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))
                         )}
                     </div>
                 </div>
