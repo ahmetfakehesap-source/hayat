@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import type { ReactNode } from 'react';
 import type { AppData, Settings } from '../types';
 import { storage } from '../utils/storage';
@@ -27,6 +27,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const [data, setData] = useState<AppData>(storage.getData());
     const [settings, setSettings] = useState<Settings>(storage.getSettings());
 
+    // Ref to track when we wrote to Firestore (prevents onSnapshot echo overwriting local state)
+    const lastWriteTimeRef = useRef<number>(0);
+    // Ref to hold the latest data for use in callbacks (prevents stale closure)
+    const dataRef = useRef<AppData>(data);
+    useEffect(() => { dataRef.current = data; }, [data]);
+
     // Monitor Auth State
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -40,22 +46,24 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                 const docSnap = await getDoc(docRef);
 
                 if (!docSnap.exists()) {
-                    // First time login? Offer to migrate local data
                     const localData = storage.getData();
-                    // We can't verify window.confirm in non-interactive environments easily, 
-                    // but for a personal app this is fine. 
-                    // Ideally we'd use a custom modal, but keeping it simple for now.
-                    // For the "Silent Sync" request, we might just do it automatically or ask once.
-                    // User asked for "automatic", so let's default to syncing local data if cloud is empty.
                     await setDoc(docRef, localData);
                 }
 
-                // Real-time listener
-                const unsubFirestore = onSnapshot(docRef, (doc) => {
-                    if (doc.exists()) {
-                        const cloudData = doc.data() as AppData;
+                // Real-time listener - skip echoed snapshots from our own writes
+                const unsubFirestore = onSnapshot(docRef, (docSnap) => {
+                    if (docSnap.exists()) {
+                        // Skip snapshots that are echoes of our own writes (within 3 seconds)
+                        const timeSinceWrite = Date.now() - lastWriteTimeRef.current;
+                        if (timeSinceWrite < 3000) {
+                            return; // Skip - this is likely our own write echoing back
+                        }
+
+                        const cloudData = docSnap.data() as AppData;
                         setData(cloudData);
-                        setSettings(cloudData.settings);
+                        if (cloudData.settings) {
+                            setSettings(cloudData.settings);
+                        }
                         // Also update local storage as backup/cache
                         storage.saveData(cloudData);
                     }
@@ -77,23 +85,25 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         document.documentElement.setAttribute('data-theme', settings.theme);
     }, [settings.theme]);
 
-    const updateData = async (newData: Partial<AppData>) => {
-        const updated = { ...data, ...newData };
+    const updateData = useCallback(async (newData: Partial<AppData>) => {
+        const updated = { ...dataRef.current, ...newData };
         setData(updated);
+        dataRef.current = updated;
 
         // Save to Local Storage always (for offline/backup)
         storage.saveData(updated);
 
         // If logged in, save to Firestore
-        if (user) {
+        if (auth.currentUser) {
             try {
-                const docRef = doc(db, 'users', user.uid);
-                await setDoc(docRef, updated, { merge: true });
+                lastWriteTimeRef.current = Date.now();
+                const docRef = doc(db, 'users', auth.currentUser.uid);
+                await setDoc(docRef, updated);
             } catch (error) {
                 console.error("Error syncing to cloud:", error);
             }
         }
-    };
+    }, []);
 
     const updateSettings = async (newSettings: Partial<Settings>) => {
         const updated = { ...settings, ...newSettings };

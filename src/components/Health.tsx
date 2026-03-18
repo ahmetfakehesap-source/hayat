@@ -17,6 +17,24 @@ const Health: React.FC = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [dateRange, setDateRange] = useState<'7' | '30' | '90' | 'all'>('30');
     const [showMacroExpand, setShowMacroExpand] = useState(false);
+    const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+
+    // Date navigation helpers
+    const navigateDate = (direction: 'prev' | 'next' | 'today') => {
+        if (direction === 'today') {
+            setSelectedDate(new Date().toISOString().split('T')[0]);
+        } else {
+            const d = new Date(selectedDate);
+            d.setDate(d.getDate() + (direction === 'next' ? 1 : -1));
+            setSelectedDate(d.toISOString().split('T')[0]);
+        }
+    };
+    const isToday = selectedDate === new Date().toISOString().split('T')[0];
+    const formatSelectedDate = () => {
+        const d = new Date(selectedDate);
+        const days = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
+        return `${d.getDate()} ${d.toLocaleDateString('tr-TR', { month: 'long' })} ${days[d.getDay()]}`;
+    };
 
     // Inline calorie form state
     const [calMeal, setCalMeal] = useState<CalorieEntry['meal']>('breakfast');
@@ -329,7 +347,7 @@ const Health: React.FC = () => {
 
     // Calculate statistics
     const stats = useMemo(() => {
-        const today = new Date().toISOString().split('T')[0];
+        const today = selectedDate;
 
         // Today's calories
         const todayCalories = data.calorieEntries
@@ -368,7 +386,7 @@ const Health: React.FC = () => {
             latestWeight: latestMeasurement?.weight,
             favoriteRecipes: data.recipes.filter((r) => r.favorite).length,
         };
-    }, [data]);
+    }, [data, selectedDate]);
 
     const filteredRecipes = data.recipes.filter((r) =>
         r.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -471,6 +489,19 @@ const Health: React.FC = () => {
                 <div className="tab-content fade-in">
                     <div className="section-header">
                         <h2>Kalori Takibi</h2>
+                    </div>
+
+                    {/* Date Navigator */}
+                    <div className="date-navigator">
+                        <button className="date-nav-btn" onClick={() => navigateDate('prev')}>◀</button>
+                        <div className="date-nav-center">
+                            <span className="date-nav-label">{isToday ? '📅 Bugün' : '📅 ' + formatSelectedDate()}</span>
+                            <span className="date-nav-date">{selectedDate}</span>
+                        </div>
+                        <button className="date-nav-btn" onClick={() => navigateDate('next')} disabled={isToday}>▶</button>
+                        {!isToday && (
+                            <button className="date-nav-today-btn" onClick={() => navigateDate('today')}>Bugün</button>
+                        )}
                     </div>
 
                     {/* Modern Calorie Add Card */}
@@ -585,17 +616,17 @@ const Health: React.FC = () => {
                     </div>
 
                     {/* Calorie Entries - Modern */}
-                    <h3 className="subsection-title">📋 Bugünün Kayıtları</h3>
+                    <h3 className="subsection-title">📋 {isToday ? 'Bugünün Kayıtları' : formatSelectedDate() + ' Kayıtları'}</h3>
                     <div className="today-records-container">
-                        {data.calorieEntries.filter(c => c.date === new Date().toISOString().split('T')[0]).length === 0 ? (
+                        {data.calorieEntries.filter(c => c.date === selectedDate).length === 0 ? (
                             <div className="empty-state-modern">
                                 <span className="empty-icon">🍽️</span>
-                                <p>Bugün henüz bir şey kaydetmedin</p>
-                                <span className="empty-hint">Yukarıdan yemek ekleyerek başla!</span>
+                                <p>{isToday ? 'Bugün henüz bir şey kaydetmedin' : 'Bu tarihte kayıt yok'}</p>
+                                <span className="empty-hint">{isToday ? 'Yukarıdan yemek ekleyerek başla!' : 'Farklı bir gün deneyin'}</span>
                             </div>
                         ) : (
                             data.calorieEntries
-                                .filter(c => c.date === new Date().toISOString().split('T')[0])
+                                .filter(c => c.date === selectedDate)
                                 .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
                                 .map((entry) => {
                                     const handleFieldUpdate = (field: keyof CalorieEntry, value: any) => {
@@ -735,10 +766,10 @@ const Health: React.FC = () => {
                     </div>
 
                     {/* Measurement History - Modern */}
-                    {data.bodyMeasurements.filter(m => m.date === new Date().toISOString().split('T')[0]).length > 0 && (
+                    {data.bodyMeasurements.filter(m => m.date === selectedDate).length > 0 && (
                         <div className="today-records-container">
                             {data.bodyMeasurements
-                                .filter(m => m.date === new Date().toISOString().split('T')[0])
+                                .filter(m => m.date === selectedDate)
                                 .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
                                 .map((m) => (
                                     <div key={m.id} className="record-card" style={{ borderLeft: '4px solid #10b981' }}>
