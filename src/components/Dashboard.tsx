@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { useApp } from '../context/AppContext';
+import { getLocalDate, dateToLocalString } from '../utils/storage';
 import './Dashboard.css';
 
 const Dashboard: React.FC = () => {
@@ -7,7 +8,7 @@ const Dashboard: React.FC = () => {
 
     // Calculate statistics
     const stats = useMemo(() => {
-        const today = new Date().toISOString().split('T')[0];
+        const today = getLocalDate();
         const thisWeek = getThisWeekDates();
 
         // Tasks
@@ -286,7 +287,7 @@ function getThisWeekDates(): string[] {
     for (let i = 0; i < 7; i++) {
         const date = new Date(monday);
         date.setDate(monday.getDate() + i);
-        dates.push(date.toISOString().split('T')[0]);
+        dates.push(dateToLocalString(date));
     }
     return dates;
 }

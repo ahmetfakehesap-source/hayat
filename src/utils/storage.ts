@@ -151,6 +151,17 @@ export const generateId = (): string => {
     return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 };
 
+// Returns today's date in YYYY-MM-DD format using LOCAL timezone (not UTC)
+export const getLocalDate = (): string => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
+
+// Converts a Date object to YYYY-MM-DD string in LOCAL timezone
+export const dateToLocalString = (date: Date): string => {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+};
+
 export const formatDate = (date: string | Date): string => {
     const d = new Date(date);
     return d.toLocaleDateString('tr-TR');
@@ -174,7 +185,7 @@ export const getThisWeekDates = (): string[] => {
     for (let i = 0; i < 7; i++) {
         const date = new Date(monday);
         date.setDate(monday.getDate() + i);
-        dates.push(date.toISOString().split('T')[0]);
+        dates.push(dateToLocalString(date));
     }
 
     return dates;

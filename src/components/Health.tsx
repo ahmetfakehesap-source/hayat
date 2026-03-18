@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useApp } from '../context/AppContext';
-import { generateId, formatDate, getThisWeekDates } from '../utils/storage';
+import { generateId, formatDate, getThisWeekDates, getLocalDate, dateToLocalString } from '../utils/storage';
 import type { CalorieEntry, WorkoutEntry, BodyMeasurement, Recipe, HealthProduct, DailyScore } from '../types';
 import './Health.css';
 
@@ -17,19 +17,19 @@ const Health: React.FC = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [dateRange, setDateRange] = useState<'7' | '30' | '90' | 'all'>('30');
     const [showMacroExpand, setShowMacroExpand] = useState(false);
-    const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+    const [selectedDate, setSelectedDate] = useState(getLocalDate());
 
     // Date navigation helpers
     const navigateDate = (direction: 'prev' | 'next' | 'today') => {
         if (direction === 'today') {
-            setSelectedDate(new Date().toISOString().split('T')[0]);
+            setSelectedDate(getLocalDate());
         } else {
             const d = new Date(selectedDate);
             d.setDate(d.getDate() + (direction === 'next' ? 1 : -1));
-            setSelectedDate(d.toISOString().split('T')[0]);
+            setSelectedDate(dateToLocalString(d));
         }
     };
-    const isToday = selectedDate === new Date().toISOString().split('T')[0];
+    const isToday = selectedDate === getLocalDate();
     const formatSelectedDate = () => {
         const d = new Date(selectedDate);
         const days = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
@@ -68,7 +68,7 @@ const Health: React.FC = () => {
         const now = new Date();
         const entry: CalorieEntry = {
             id: generateId(),
-            date: now.toISOString().split('T')[0],
+            date: dateToLocalString(now),
             time: `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`,
             meal: calMeal,
             food: calFood.trim(),
@@ -120,7 +120,7 @@ const Health: React.FC = () => {
 
         const newEntry: WorkoutEntry = {
             id: generateId(),
-            date: new Date().toISOString().split('T')[0],
+            date: getLocalDate(),
             type: wkType.trim(),
             duration: Number(wkDuration),
             caloriesBurned: Number(wkCalBurned),
@@ -147,7 +147,7 @@ const Health: React.FC = () => {
 
         const newEntry: BodyMeasurement = {
             id: generateId(),
-            date: new Date().toISOString().split('T')[0],
+            date: getLocalDate(),
             weight: Number(measWeight),
             bodyFat: Number(measBodyFat) || undefined,
             measurements: {
@@ -267,7 +267,7 @@ const Health: React.FC = () => {
         for (let i = 0; i < daysToShow; i++) {
             const date = new Date(today);
             date.setDate(today.getDate() - i);
-            const dateStr = date.toISOString().split('T')[0];
+            const dateStr = dateToLocalString(date);
 
             // Only include days that have actual data
             if (datesWithData.has(dateStr)) {

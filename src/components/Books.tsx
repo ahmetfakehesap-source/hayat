@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useApp } from '../context/AppContext';
-import { generateId, formatDate } from '../utils/storage';
+import { generateId, formatDate, getLocalDate } from '../utils/storage';
 import type { Book } from '../types';
 import './Books.css';
 
@@ -28,7 +28,7 @@ const Books: React.FC = () => {
             status: bookStatus,
             totalPages: bookPages ? Number(bookPages) : undefined,
             currentPage: bookStatus === 'reading' ? 0 : undefined,
-            startDate: bookStartDate || (bookStatus === 'reading' ? new Date().toISOString().split('T')[0] : undefined),
+            startDate: bookStartDate || (bookStatus === 'reading' ? getLocalDate() : undefined),
         };
 
         updateData({ books: [...data.books, newBook] });

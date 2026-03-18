@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { generateId, formatDate, downloadFile } from '../utils/storage';
+import { generateId, formatDate, downloadFile, getLocalDate } from '../utils/storage';
 import type { JournalEntry } from '../types';
 import './Journal.css';
 
@@ -21,7 +21,7 @@ const Journal: React.FC = () => {
 
         const newEntry: JournalEntry = {
             id: generateId(),
-            date: new Date().toISOString().split('T')[0],
+            date: getLocalDate(),
             content: content.trim(),
             mood: mood,
             tags: tags.split(',').map(t => t.trim()).filter(t => t),
@@ -73,7 +73,7 @@ const Journal: React.FC = () => {
             })
             .join('\n');
 
-        downloadFile(contentExport, `gunlugum-${new Date().toISOString().split('T')[0]}.txt`);
+        downloadFile(contentExport, `gunlugum-${getLocalDate()}.txt`);
     };
 
     const filteredEntries = data.journalEntries

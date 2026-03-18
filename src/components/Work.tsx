@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
-import { generateId } from '../utils/storage';
+import { generateId, getLocalDate, dateToLocalString } from '../utils/storage';
 import type { Task, Project, Milestone } from '../types';
 import './Work.css';
 
@@ -17,8 +17,8 @@ const Work: React.FC = () => {
             const bizProject: Project = {
                 id: generateId(),
                 name: 'Robux Satış Operasyonu (Faz 1)',
-                startDate: new Date().toISOString().split('T')[0],
-                endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // +30 days
+                startDate: getLocalDate(),
+                endDate: dateToLocalString(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)), // +30 days
                 status: 'in-progress',
                 progress: 0,
                 notes: 'Ramazan dönemi strateji geliştirme ve mevcut operasyonu koruma.',

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { generateId, formatDate } from '../utils/storage';
+import { generateId, formatDate, getLocalDate } from '../utils/storage';
 import type { Goal } from '../types';
 import './Goals.css';
 
@@ -62,7 +62,7 @@ const GoalsPage: React.FC = () => {
                     return {
                         ...g,
                         completed: !g.completed,
-                        completedDate: !g.completed ? new Date().toISOString().split('T')[0] : undefined,
+                        completedDate: !g.completed ? getLocalDate() : undefined,
                     };
                 }
                 return g;
