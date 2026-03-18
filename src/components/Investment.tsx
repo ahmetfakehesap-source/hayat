@@ -76,6 +76,7 @@ const InvestmentPage: React.FC = () => {
             stock: 0,
             crypto: 0,
             fund: 0,
+            business: 0,
             other: 0,
         };
 
@@ -134,7 +135,11 @@ const InvestmentPage: React.FC = () => {
                         <span className="distribution-value">₺{stats.byType.fund.toLocaleString('tr-TR')}</span>
                     </div>
                     <div className="distribution-item">
-                        <span className="distribution-label">💼 Diğer</span>
+                        <span className="distribution-label">💼 İş / Robux</span>
+                        <span className="distribution-value">₺{stats.byType.business.toLocaleString('tr-TR')}</span>
+                    </div>
+                    <div className="distribution-item">
+                        <span className="distribution-label">📦 Diğer</span>
                         <span className="distribution-value">₺{stats.byType.other.toLocaleString('tr-TR')}</span>
                     </div>
                 </div>
@@ -159,7 +164,8 @@ const InvestmentPage: React.FC = () => {
                             <option value="stock">📈 Hisse</option>
                             <option value="crypto">₿ Kripto</option>
                             <option value="fund">📊 Fon</option>
-                            <option value="other">💼 Diğer</option>
+                            <option value="business">💼 İş / Robux</option>
+                            <option value="other">📦 Diğer</option>
                         </select>
                     </div>
                     <div className="inline-field field-sm">
@@ -230,7 +236,8 @@ const InvestmentPage: React.FC = () => {
                                                 {inv.type === 'stock' && '📈 Hisse'}
                                                 {inv.type === 'crypto' && '₿ Kripto'}
                                                 {inv.type === 'fund' && '📊 Fon'}
-                                                {inv.type === 'other' && '💼 Diğer'}
+                                                {inv.type === 'business' && '💼 İş / Robux'}
+                                                {inv.type === 'other' && '📦 Diğer'}
                                             </span>
                                         </td>
                                         <td>{inv.quantity}</td>

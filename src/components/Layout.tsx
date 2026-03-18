@@ -9,7 +9,7 @@ interface LayoutProps {
 }
 
 const Layout: React.FC<LayoutProps> = ({ children, currentPage, onNavigate }) => {
-    const { settings, updateSettings, exportData, importData } = useApp();
+    const { settings, updateSettings, exportData, importData, user, googleLogin, logout } = useApp();
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [showImportModal, setShowImportModal] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
@@ -107,6 +107,25 @@ const Layout: React.FC<LayoutProps> = ({ children, currentPage, onNavigate }) =>
                                 </span>
                             )}
                         </button>
+
+                        {/* Desktop Auth */}
+                        <div className="auth-section">
+                            {user ? (
+                                <div className="user-profile" onClick={logout} title="Çıkış Yap">
+                                    {isSidebarOpen && (
+                                        <div className="user-info">
+                                            <span className="user-name">{user.displayName}</span>
+                                            <span className="user-logout">Çıkış Yap</span>
+                                        </div>
+                                    )}
+                                </div>
+                            ) : (
+                                <button className="nav-item btn-google" onClick={googleLogin}>
+                                    <span className="nav-icon">🔑</span>
+                                    {isSidebarOpen && <span className="nav-label">Giriş Yap (Google)</span>}
+                                </button>
+                            )}
+                        </div>
                     </div>
                 </aside>
             )}
@@ -130,20 +149,33 @@ const Layout: React.FC<LayoutProps> = ({ children, currentPage, onNavigate }) =>
                         </h2>
                     )}
 
+
                     <div className="header-actions">
                         {isMobile && (
                             <button className="btn btn-secondary btn-sm" onClick={toggleTheme}>
                                 {settings.theme === 'light' ? '🌙' : '☀️'}
                             </button>
                         )}
+                        {/* Mobile Auth Button */}
+                        {isMobile && (
+                            user ? (
+                                <div className="user-profile-mobile" onClick={logout} title="Çıkış Yap">
+                                    <img src={user.photoURL || 'https://via.placeholder.com/32'} alt={user.displayName || 'User'} className="user-avatar-sm" />
+                                </div>
+                            ) : (
+                                <button className="btn btn-primary btn-sm btn-google-mobile" onClick={googleLogin}>
+                                    Giriş
+                                </button>
+                            )
+                        )}
                         <button className="btn btn-secondary btn-sm" onClick={exportData}>
-                            📥 {!isMobile && 'Dışa Aktar'}
+                            📥
                         </button>
                         <button
                             className="btn btn-secondary btn-sm"
                             onClick={() => setShowImportModal(true)}
                         >
-                            📤 {!isMobile && 'İçe Aktar'}
+                            📤
                         </button>
                     </div>
                 </header>

@@ -31,19 +31,44 @@ const defaultData: AppData = {
     settings: defaultSettings,
 };
 
+const DATA_VERSION = 2; // Increment this when default settings change
+
 export const storage = {
+
     // Get all data
     getData(): AppData {
         try {
             const data = localStorage.getItem(STORAGE_KEY);
             if (data) {
                 const parsed = JSON.parse(data);
+
+                // version check - if missing or old, merge new defaults
+                if (!parsed.version || parsed.version < DATA_VERSION) {
+                    console.log('Migrating data to version', DATA_VERSION);
+                    return {
+                        ...defaultData,
+                        ...parsed,
+                        settings: {
+                            ...defaultData.settings, // Use new defaults as base
+                            ...parsed.settings, // Keep user's theme etc if needed, but we want to force new goals
+                            // Force overwrite specific goals for the migration
+                            dailyCalorieGoal: defaultSettings.dailyCalorieGoal,
+                            dailyProteinGoal: defaultSettings.dailyProteinGoal,
+                            dailyCarbsGoal: defaultSettings.dailyCarbsGoal,
+                            dailyFatGoal: defaultSettings.dailyFatGoal,
+                            yearlyBookGoal: defaultSettings.yearlyBookGoal,
+                            weeklyWorkoutGoal: defaultSettings.weeklyWorkoutGoal,
+                        },
+                        version: DATA_VERSION
+                    };
+                }
+
                 return { ...defaultData, ...parsed };
             }
-            return defaultData;
+            return { ...defaultData, version: DATA_VERSION };
         } catch (error) {
             console.error('Error loading data:', error);
-            return defaultData;
+            return { ...defaultData, version: DATA_VERSION };
         }
     },
 

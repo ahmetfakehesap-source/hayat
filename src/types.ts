@@ -102,7 +102,7 @@ export interface JournalEntry {
 export interface Investment {
     id: string;
     asset: string;
-    type: 'stock' | 'crypto' | 'fund' | 'other';
+    type: 'stock' | 'crypto' | 'fund' | 'business' | 'other';
     quantity: number;
     buyPrice: number;
     currentPrice: number;
@@ -167,4 +167,5 @@ export interface AppData {
     schedule: ScheduleEntry[];
     goals: Goal[];
     settings: Settings;
+    version?: number;
 }
