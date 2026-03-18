@@ -6,7 +6,7 @@ import { storage } from '../utils/storage';
 import { auth, db, googleProvider } from '../lib/firebase';
 import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
 import type { User } from 'firebase/auth';
-import { doc, setDoc, onSnapshot, getDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
 
 interface AppContextType {
     data: AppData;
@@ -27,72 +27,50 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const [data, setData] = useState<AppData>(storage.getData());
     const [settings, setSettings] = useState<Settings>(storage.getSettings());
 
-    // Ref to track when we wrote to Firestore (prevents onSnapshot echo overwriting local state)
-    const lastWriteTimeRef = useRef<number>(0);
     // Ref to hold the latest data for use in callbacks (prevents stale closure)
     const dataRef = useRef<AppData>(data);
     useEffect(() => { dataRef.current = data; }, [data]);
-    // Ref to properly track and cleanup Firestore listener
-    const firestoreUnsubRef = useRef<(() => void) | null>(null);
+    // Track if we already loaded cloud data for this session
+    const cloudLoadedRef = useRef(false);
 
-    // Monitor Auth State
+    // Monitor Auth State - ONE-TIME load from Firestore, NO real-time listener
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
             setUser(currentUser);
 
-            // Always cleanup previous Firestore listener first
-            if (firestoreUnsubRef.current) {
-                firestoreUnsubRef.current();
-                firestoreUnsubRef.current = null;
-            }
-
-            if (currentUser) {
-                // User logged in: Subscribe to Firestore
+            if (currentUser && !cloudLoadedRef.current) {
+                cloudLoadedRef.current = true;
                 const docRef = doc(db, 'users', currentUser.uid);
 
-                // Check if user has data in Firestore
-                const docSnap = await getDoc(docRef);
+                try {
+                    const docSnap = await getDoc(docRef);
 
-                if (!docSnap.exists()) {
-                    const localData = storage.getData();
-                    lastWriteTimeRef.current = Date.now();
-                    await setDoc(docRef, localData);
-                }
-
-                // Real-time listener - skip echoed snapshots from our own writes
-                firestoreUnsubRef.current = onSnapshot(docRef, (docSnap) => {
                     if (docSnap.exists()) {
-                        // Skip snapshots that are echoes of our own writes (within 5 seconds)
-                        const timeSinceWrite = Date.now() - lastWriteTimeRef.current;
-                        if (timeSinceWrite < 5000) {
-                            return; // Skip - this is likely our own write echoing back
-                        }
-
+                        // Load cloud data once
                         const cloudData = docSnap.data() as AppData;
                         setData(cloudData);
                         dataRef.current = cloudData;
                         if (cloudData.settings) {
                             setSettings(cloudData.settings);
                         }
-                        // Also update local storage as backup/cache
                         storage.saveData(cloudData);
+                    } else {
+                        // First time: upload local data to cloud
+                        const localData = storage.getData();
+                        await setDoc(docRef, localData);
                     }
-                });
-            } else {
-                // User logged out: Revert to Local Storage
+                } catch (error) {
+                    console.error("Error loading cloud data:", error);
+                    // Fall back to local data (already loaded)
+                }
+            } else if (!currentUser) {
+                cloudLoadedRef.current = false;
                 setData(storage.getData());
                 setSettings(storage.getSettings());
             }
         });
 
-        return () => {
-            unsubscribe();
-            // Also cleanup Firestore listener on unmount
-            if (firestoreUnsubRef.current) {
-                firestoreUnsubRef.current();
-                firestoreUnsubRef.current = null;
-            }
-        };
+        return () => unsubscribe();
     }, []);
 
     // Apply theme
@@ -105,13 +83,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         setData(updated);
         dataRef.current = updated;
 
-        // Save to Local Storage always (for offline/backup)
+        // Save to Local Storage always
         storage.saveData(updated);
 
-        // If logged in, save to Firestore
+        // If logged in, save to Firestore (write-only, no listener)
         if (auth.currentUser) {
             try {
-                lastWriteTimeRef.current = Date.now();
                 const docRef = doc(db, 'users', auth.currentUser.uid);
                 await setDoc(docRef, updated);
             } catch (error) {
