@@ -32,11 +32,19 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     // Ref to hold the latest data for use in callbacks (prevents stale closure)
     const dataRef = useRef<AppData>(data);
     useEffect(() => { dataRef.current = data; }, [data]);
+    // Ref to properly track and cleanup Firestore listener
+    const firestoreUnsubRef = useRef<(() => void) | null>(null);
 
     // Monitor Auth State
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
             setUser(currentUser);
+
+            // Always cleanup previous Firestore listener first
+            if (firestoreUnsubRef.current) {
+                firestoreUnsubRef.current();
+                firestoreUnsubRef.current = null;
+            }
 
             if (currentUser) {
                 // User logged in: Subscribe to Firestore
@@ -47,20 +55,22 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
                 if (!docSnap.exists()) {
                     const localData = storage.getData();
+                    lastWriteTimeRef.current = Date.now();
                     await setDoc(docRef, localData);
                 }
 
                 // Real-time listener - skip echoed snapshots from our own writes
-                const unsubFirestore = onSnapshot(docRef, (docSnap) => {
+                firestoreUnsubRef.current = onSnapshot(docRef, (docSnap) => {
                     if (docSnap.exists()) {
-                        // Skip snapshots that are echoes of our own writes (within 3 seconds)
+                        // Skip snapshots that are echoes of our own writes (within 5 seconds)
                         const timeSinceWrite = Date.now() - lastWriteTimeRef.current;
-                        if (timeSinceWrite < 3000) {
+                        if (timeSinceWrite < 5000) {
                             return; // Skip - this is likely our own write echoing back
                         }
 
                         const cloudData = docSnap.data() as AppData;
                         setData(cloudData);
+                        dataRef.current = cloudData;
                         if (cloudData.settings) {
                             setSettings(cloudData.settings);
                         }
@@ -68,8 +78,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                         storage.saveData(cloudData);
                     }
                 });
-
-                return () => unsubFirestore();
             } else {
                 // User logged out: Revert to Local Storage
                 setData(storage.getData());
@@ -77,7 +85,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             }
         });
 
-        return () => unsubscribe();
+        return () => {
+            unsubscribe();
+            // Also cleanup Firestore listener on unmount
+            if (firestoreUnsubRef.current) {
+                firestoreUnsubRef.current();
+                firestoreUnsubRef.current = null;
+            }
+        };
     }, []);
 
     // Apply theme
