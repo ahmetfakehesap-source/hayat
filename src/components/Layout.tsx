@@ -159,9 +159,9 @@ const Layout: React.FC<LayoutProps> = ({ children, currentPage, onNavigate }) =>
                         {/* Mobile Auth Button */}
                         {isMobile && (
                             user ? (
-                                <div className="user-profile-mobile" onClick={logout} title="Çıkış Yap">
-                                    <img src={user.photoURL || 'https://via.placeholder.com/32'} alt={user.displayName || 'User'} className="user-avatar-sm" />
-                                </div>
+                                <button className="btn btn-secondary btn-sm" onClick={logout} title="Çıkış Yap">
+                                    👤 Çıkış
+                                </button>
                             ) : (
                                 <button className="btn btn-primary btn-sm btn-google-mobile" onClick={googleLogin}>
                                     Giriş
