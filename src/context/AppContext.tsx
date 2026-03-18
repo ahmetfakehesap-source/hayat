@@ -44,20 +44,31 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
                 try {
                     const docSnap = await getDoc(docRef);
+                    const localData = storage.getData();
+                    const localTimestamp = (localData as any).lastUpdated || 0;
 
                     if (docSnap.exists()) {
-                        // Load cloud data once
                         const cloudData = docSnap.data() as AppData;
-                        setData(cloudData);
-                        dataRef.current = cloudData;
-                        if (cloudData.settings) {
-                            setSettings(cloudData.settings);
+                        const cloudTimestamp = (cloudData as any).lastUpdated || 0;
+
+                        if (localTimestamp > cloudTimestamp) {
+                            // Local is newer (F5 before cloud write completed) - keep local, push to cloud
+                            console.log('Local data is newer, pushing to cloud');
+                            setData(localData);
+                            dataRef.current = localData;
+                            if (localData.settings) setSettings(localData.settings);
+                            await setDoc(docRef, localData);
+                        } else {
+                            // Cloud is newer or equal - use cloud data
+                            console.log('Cloud data is newer, using cloud');
+                            setData(cloudData);
+                            dataRef.current = cloudData;
+                            if (cloudData.settings) setSettings(cloudData.settings);
+                            storage.saveData(cloudData);
                         }
-                        storage.saveData(cloudData);
                     } else {
                         // First time: upload local data to cloud
-                        const localData = storage.getData();
-                        await setDoc(docRef, localData);
+                        await setDoc(docRef, { ...localData, lastUpdated: Date.now() });
                     }
                 } catch (error) {
                     console.error("Error loading cloud data:", error);
@@ -79,7 +90,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }, [settings.theme]);
 
     const updateData = useCallback(async (newData: Partial<AppData>) => {
-        const updated = { ...dataRef.current, ...newData };
+        const updated = { ...dataRef.current, ...newData, lastUpdated: Date.now() } as any;
         setData(updated);
         dataRef.current = updated;
 
