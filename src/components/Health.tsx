@@ -796,75 +796,119 @@ const Health: React.FC = () => {
             {activeTab === 'workout' && (
                 <div className="tab-content fade-in">
                     <div className="section-header">
-                        <h2>Antrenman Takibi</h2>
+                        <h2>🏋️ Antrenman Takibi</h2>
                     </div>
 
-                    {/* Inline Quick-Add Workout */}
-                    <div className="inline-form">
-                        <div className="inline-form-row">
-                            <div className="inline-field">
-                                <label>Antrenman</label>
+                    {/* Modern Workout Add Card */}
+                    <div className="calorie-add-card">
+                        <div className="calorie-input-row">
+                            <div className="calorie-input-field food-field">
+                                <span className="input-icon">🏃</span>
                                 <input
                                     type="text"
-                                    placeholder="Koşu, Ağırlık, Yoga..."
+                                    placeholder="Antrenman türü (Koşu, Ağırlık, Yoga...)"
                                     value={wkType}
                                     onChange={(e) => setWkType(e.target.value)}
                                     onKeyDown={(e) => { if (e.key === 'Enter') handleAddWorkoutInline(); }}
                                 />
                             </div>
-                            <div className="inline-field field-sm">
-                                <label>Süre (dk)</label>
-                                <input type="number" placeholder="0" value={wkDuration} onChange={(e) => setWkDuration(e.target.value)} />
-                            </div>
-                            <div className="inline-field field-sm">
-                                <label>Kalori</label>
-                                <input type="number" placeholder="kcal" value={wkCalBurned} onChange={(e) => setWkCalBurned(e.target.value)} />
-                            </div>
-                            <button className="btn-add" onClick={handleAddWorkoutInline}>➕ Ekle</button>
                         </div>
-                        <button className="expand-toggle" onClick={() => setShowWkExpand(!showWkExpand)}>
-                            {showWkExpand ? '▲ Gizle' : '▼ Not ekle'}
+                        <div className="calorie-input-row">
+                            <div className="calorie-input-field" style={{ flex: 1 }}>
+                                <span className="input-icon">⏱️</span>
+                                <input
+                                    type="number"
+                                    placeholder="0"
+                                    value={wkDuration}
+                                    onChange={(e) => setWkDuration(e.target.value)}
+                                    style={{ textAlign: 'center', fontWeight: 700 }}
+                                />
+                                <span className="input-suffix">dakika</span>
+                            </div>
+                            <div className="calorie-input-field" style={{ flex: 1 }}>
+                                <span className="input-icon">🔥</span>
+                                <input
+                                    type="number"
+                                    placeholder="0"
+                                    value={wkCalBurned}
+                                    onChange={(e) => setWkCalBurned(e.target.value)}
+                                    style={{ textAlign: 'center', fontWeight: 700 }}
+                                />
+                                <span className="input-suffix">kcal</span>
+                            </div>
+                        </div>
+
+                        <button className="macro-expand-btn" onClick={() => setShowWkExpand(!showWkExpand)}>
+                            {showWkExpand ? '▲ Notu Gizle' : '▼ Not Ekle'}
                         </button>
                         {showWkExpand && (
-                            <div className="expand-area">
-                                <div className="inline-form-row">
-                                    <div className="inline-field">
-                                        <label>Notlar</label>
-                                        <input type="text" placeholder="Antrenman hakkında not..." value={wkNotes} onChange={(e) => setWkNotes(e.target.value)} />
-                                    </div>
+                            <div className="calorie-input-row" style={{ animation: 'fadeIn 0.2s ease' }}>
+                                <div className="calorie-input-field food-field">
+                                    <span className="input-icon">📝</span>
+                                    <input
+                                        type="text"
+                                        placeholder="Antrenman hakkında not..."
+                                        value={wkNotes}
+                                        onChange={(e) => setWkNotes(e.target.value)}
+                                    />
                                 </div>
                             </div>
                         )}
+
+                        <button className="calorie-add-btn" onClick={handleAddWorkoutInline}>
+                            💪 Antrenman Kaydet
+                        </button>
                     </div>
 
-                    <div className="entries-list">
+                    {/* Workout Entries - Modern */}
+                    <h3 className="subsection-title">📋 Antrenman Kayıtları</h3>
+                    <div className="today-records-container">
                         {data.workoutEntries.length === 0 ? (
-                            <div className="empty-state card">
-                                <p>🏋️ Henüz antrenman kaydı eklenmemiş</p>
+                            <div className="empty-state-modern">
+                                <span className="empty-icon">🏋️</span>
+                                <p>Henüz antrenman kaydı eklenmemiş</p>
+                                <span className="empty-hint">Yukarıdan antrenman ekleyerek başla!</span>
                             </div>
                         ) : (
                             data.workoutEntries
                                 .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
                                 .map((entry) => (
-                                    <div key={entry.id} className="workout-item card">
-                                        <div className="workout-main">
-                                            <div className="workout-header">
-                                                <span className="workout-type">{entry.type}</span>
-                                                <span className="workout-date">{formatDate(entry.date)}</span>
+                                    <div key={entry.id} className="record-card" style={{ borderLeft: '4px solid #8b5cf6' }}>
+                                        <div className="record-card-top">
+                                            <div className="record-meal-info">
+                                                <span className="record-meal-emoji">🏋️</span>
+                                                <div className="record-meal-text">
+                                                    <div className="record-food-name" style={{ cursor: 'default' }}>{entry.type}</div>
+                                                    <span className="record-time">{formatDate(entry.date)}</span>
+                                                </div>
                                             </div>
-                                            <div className="workout-stats">
-                                                ⏱️ {entry.duration} dk • 🔥 {entry.caloriesBurned} kcal
+                                            <div className="record-right">
+                                                <button
+                                                    className="record-delete-btn"
+                                                    onClick={() => handleDeleteWorkout(entry.id)}
+                                                    title="Sil"
+                                                >
+                                                    ✕
+                                                </button>
                                             </div>
-                                            {entry.notes && (
-                                                <div className="workout-notes">{entry.notes}</div>
-                                            )}
                                         </div>
-                                        <button
-                                            className="btn-icon delete"
-                                            onClick={() => handleDeleteWorkout(entry.id)}
-                                        >
-                                            🗑️
-                                        </button>
+                                        <div className="record-macros-row">
+                                            <div className="record-macro-pill">
+                                                <span>⏱️</span>
+                                                <span style={{ fontWeight: 600 }}>{entry.duration}</span>
+                                                <span className="macro-unit">dk</span>
+                                            </div>
+                                            <div className="record-macro-pill" style={{ background: 'rgba(239, 68, 68, 0.08)' }}>
+                                                <span>🔥</span>
+                                                <span style={{ fontWeight: 700, color: '#ef4444' }}>{entry.caloriesBurned}</span>
+                                                <span className="macro-unit" style={{ color: '#ef4444' }}>kcal</span>
+                                            </div>
+                                        </div>
+                                        {entry.notes && (
+                                            <div className="workout-note-modern">
+                                                📝 {entry.notes}
+                                            </div>
+                                        )}
                                     </div>
                                 ))
                         )}

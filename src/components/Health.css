@@ -2319,3 +2319,14 @@
         margin-bottom: 1rem;
     }
 }
+
+/* ===== Workout Note Modern ===== */
+.workout-note-modern {
+    font-size: 0.813rem;
+    color: var(--text-secondary);
+    background: var(--bg-tertiary);
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    margin-top: 0.5rem;
+    line-height: 1.5;
+}
