@@ -2,7 +2,6 @@ import React, { useState, useMemo } from 'react';
 import { useApp } from '../context/AppContext';
 import { generateId, formatDate, getThisWeekDates, getLocalDate, dateToLocalString } from '../utils/storage';
 import type { CalorieEntry, WorkoutEntry, BodyMeasurement, Recipe, HealthProduct, DailyScore } from '../types';
-import type { FoodItem } from '../utils/foodDatabase';
 import FoodSearch from './FoodSearch';
 import './Health.css';
 
@@ -527,9 +526,9 @@ const Health: React.FC = () => {
                             ))}
                         </div>
 
-                        {/* Food Search - Ara & Barkod Tara */}
-                        <FoodSearch onSelect={(food: FoodItem) => {
-                            setCalFood(food.brand ? `${food.brand} - ${food.name}` : food.name);
+                        {/* Food Search - Diyetkolik Veritabanı */}
+                        <FoodSearch onSelect={(food) => {
+                            setCalFood(food.name);
                             setCalCalories(String(food.calories));
                             setCalProtein(String(food.protein));
                             setCalCarbs(String(food.carbs));
