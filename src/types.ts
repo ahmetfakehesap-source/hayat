@@ -1,4 +1,11 @@
 // Global Types
+import type { FoodItem } from './utils/foodDatabase';
+
+export interface RecentFoodEntry {
+    foodIndex: number;
+    count: number;
+    lastUsed: number;
+}
 export interface Task {
     id: string;
     title: string;
@@ -167,5 +174,7 @@ export interface AppData {
     schedule: ScheduleEntry[];
     goals: Goal[];
     settings: Settings;
+    customFoods?: FoodItem[];
+    recentFoodEntries?: RecentFoodEntry[];
     version?: number;
 }

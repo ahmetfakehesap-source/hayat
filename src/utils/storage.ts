@@ -29,6 +29,8 @@ const defaultData: AppData = {
     schedule: [],
     goals: [],
     settings: defaultSettings,
+    customFoods: [],
+    recentFoodEntries: [],
 };
 
 const DATA_VERSION = 2; // Increment this when default settings change

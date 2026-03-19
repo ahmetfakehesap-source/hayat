@@ -1,13 +1,17 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import type { FoodItem, Serving } from '../utils/foodDatabase';
-import { searchLocalFoods, calcServingMacros, getRecentFoods, getFrequentFoods, addRecentFood } from '../utils/foodDatabase';
+import { searchLocalFoods, calcServingMacros, getRecentFoodsList, getFrequentFoodsList } from '../utils/foodDatabase';
+import type { RecentFoodEntry } from '../types';
 import './FoodSearch.css';
 
 interface FoodSearchProps {
     onSelect: (food: FoodItem, serving: Serving, macros: { calories: number; protein: number; carbs: number; fat: number; gram: number }) => void;
+    customFoods: FoodItem[];
+    recentFoodEntries: RecentFoodEntry[];
+    onAddRecent: (foodIndex: number) => void;
 }
 
-const FoodSearch: React.FC<FoodSearchProps> = ({ onSelect }) => {
+const FoodSearch: React.FC<FoodSearchProps> = ({ onSelect, customFoods, recentFoodEntries, onAddRecent }) => {
     const [query, setQuery] = useState('');
     const [results, setResults] = useState<FoodItem[]>([]);
     const [recentFoods, setRecentFoods] = useState<FoodItem[]>([]);
@@ -30,8 +34,8 @@ const FoodSearch: React.FC<FoodSearchProps> = ({ onSelect }) => {
     }, []);
 
     const loadHistory = () => {
-        setRecentFoods(getRecentFoods(5));
-        setFrequentFoods(getFrequentFoods(5));
+        setRecentFoods(getRecentFoodsList(recentFoodEntries, customFoods, 5));
+        setFrequentFoods(getFrequentFoodsList(recentFoodEntries, customFoods, 5));
     };
 
     const handleFocus = () => {
@@ -50,9 +54,9 @@ const FoodSearch: React.FC<FoodSearchProps> = ({ onSelect }) => {
             setResults([]);
             return;
         }
-        const found = searchLocalFoods(value);
+        const found = searchLocalFoods(value, customFoods);
         setResults(found);
-    }, []);
+    }, [customFoods]);
 
     const handleFoodClick = (food: FoodItem) => {
         setSelectedFood(food);
@@ -81,7 +85,7 @@ const FoodSearch: React.FC<FoodSearchProps> = ({ onSelect }) => {
             fat: Math.round(baseMacros.fat * numQty * 10) / 10,
             gram: Math.round(baseMacros.gram * numQty)
         };
-        addRecentFood(selectedFood); // Save to history
+        onAddRecent(selectedFood._index); // Save to history via parent
         onSelect(selectedFood, { ...selectedServing, name: numQty === 1 ? selectedServing.name : `${numQty}x ${selectedServing.name}` }, macros);
         // Reset
         setSelectedFood(null);

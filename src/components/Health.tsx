@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useApp } from '../context/AppContext';
 import { generateId, formatDate, getThisWeekDates, getLocalDate, dateToLocalString } from '../utils/storage';
-import { addCustomFood } from '../utils/foodDatabase';
+import { recordFoodInteraction } from '../utils/foodDatabase';
 import type { CalorieEntry, WorkoutEntry, BodyMeasurement, Recipe, HealthProduct, DailyScore } from '../types';
 import FoodSearch from './FoodSearch';
 import './Health.css';
@@ -577,16 +577,24 @@ const Health: React.FC = () => {
                         </div>
 
                         {/* Food Search - Diyetkolik Veritabanı */}
-                        <FoodSearch onSelect={(_food, serving, macros) => {
-                            setPendingFoods(prev => [...prev, {
-                                id: Math.random().toString(36).substr(2, 9),
-                                name: `${_food.name} (${serving.name})`,
-                                calories: macros.calories,
-                                protein: macros.protein,
-                                carbs: macros.carbs,
-                                fat: macros.fat
-                            }]);
-                        }} />
+                        <FoodSearch 
+                            customFoods={data.customFoods || []}
+                            recentFoodEntries={data.recentFoodEntries || []}
+                            onAddRecent={(foodIndex) => {
+                                const newRecent = recordFoodInteraction(data.recentFoodEntries || [], foodIndex);
+                                updateData({ recentFoodEntries: newRecent });
+                            }}
+                            onSelect={(_food, serving, macros) => {
+                                setPendingFoods(prev => [...prev, {
+                                    id: Math.random().toString(36).substr(2, 9),
+                                    name: `${_food.name} (${serving.name})`,
+                                    calories: macros.calories,
+                                    protein: macros.protein,
+                                    carbs: macros.carbs,
+                                    fat: macros.fat
+                                }]);
+                            }}
+                        />
 
                         {/* Pending Foods Cart */}
                         {pendingFoods.length > 0 && (
@@ -1574,7 +1582,8 @@ const Health: React.FC = () => {
                             const name = formData.get('name') as string;
                             if(!name) return;
                             
-                            addCustomFood({
+                            const customFoods = data.customFoods || [];
+                            const newFood = {
                                 name,
                                 calories: Number(formData.get('calories')),
                                 protein: Number(formData.get('protein')) || 0,
@@ -1584,8 +1593,10 @@ const Health: React.FC = () => {
                                     { name: '100 Gram', gram: 100 },
                                     { name: '1 Porsiyon', gram: Number(formData.get('portionGram')) || 200 },
                                     { name: '1 Adet', gram: Number(formData.get('pieceGram')) || 100 }
-                                ]
-                            });
+                                ],
+                                _index: -(customFoods.length + 1)
+                            };
+                            updateData({ customFoods: [newFood, ...customFoods] });
                             setShowDataModal(false);
                             alert('Besin başarıyla veritabanına eklendi! Arama çubuğundan bulabilirsiniz.');
                         }}>
