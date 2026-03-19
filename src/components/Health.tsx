@@ -518,6 +518,43 @@ const Health: React.FC = () => {
                         )}
                     </div>
 
+                    {/* Macros */}
+                    <div className="macros-grid">
+                        <div className="macro-card card">
+                            <div className="macro-icon">🥩</div>
+                            <div className="macro-label">Protein</div>
+                            <div className="macro-value">{stats.todayProtein}g / {settings.dailyProteinGoal}g</div>
+                            <div className="macro-progress-bar">
+                                <div
+                                    className={`macro-progress-fill ${stats.todayProtein >= settings.dailyProteinGoal ? 'goal-met' : ''}`}
+                                    style={{ width: `${Math.min((stats.todayProtein / settings.dailyProteinGoal) * 100, 100)}%` }}
+                                />
+                            </div>
+                        </div>
+                        <div className="macro-card card">
+                            <div className="macro-icon">🍞</div>
+                            <div className="macro-label">Karbonhidrat</div>
+                            <div className="macro-value">{stats.todayCarbs}g / {settings.dailyCarbsGoal}g</div>
+                            <div className="macro-progress-bar">
+                                <div
+                                    className={`macro-progress-fill ${stats.todayCarbs >= settings.dailyCarbsGoal ? 'goal-met' : ''}`}
+                                    style={{ width: `${Math.min((stats.todayCarbs / settings.dailyCarbsGoal) * 100, 100)}%` }}
+                                />
+                            </div>
+                        </div>
+                        <div className="macro-card card">
+                            <div className="macro-icon">🥑</div>
+                            <div className="macro-label">Yağ</div>
+                            <div className="macro-value">{stats.todayFat}g / {settings.dailyFatGoal}g</div>
+                            <div className="macro-progress-bar">
+                                <div
+                                    className={`macro-progress-fill ${stats.todayFat >= settings.dailyFatGoal ? 'goal-met' : ''}`}
+                                    style={{ width: `${Math.min((stats.todayFat / settings.dailyFatGoal) * 100, 100)}%` }}
+                                />
+                            </div>
+                        </div>
+                    </div>
+
                     {/* Modern Calorie Add Card */}
                     <div className="calorie-add-card">
                         {/* Meal Type Selector */}
@@ -654,44 +691,6 @@ const Health: React.FC = () => {
                             ➕ {pendingFoods.length > 0 ? "Toplu Kaydet" : "Kaydet"}
                         </button>
                     </div>
-
-                    {/* Macros */}
-                    <div className="macros-grid">
-                        <div className="macro-card card">
-                            <div className="macro-icon">🥩</div>
-                            <div className="macro-label">Protein</div>
-                            <div className="macro-value">{stats.todayProtein}g / {settings.dailyProteinGoal}g</div>
-                            <div className="macro-progress-bar">
-                                <div
-                                    className={`macro-progress-fill ${stats.todayProtein >= settings.dailyProteinGoal ? 'goal-met' : ''}`}
-                                    style={{ width: `${Math.min((stats.todayProtein / settings.dailyProteinGoal) * 100, 100)}%` }}
-                                />
-                            </div>
-                        </div>
-                        <div className="macro-card card">
-                            <div className="macro-icon">🍞</div>
-                            <div className="macro-label">Karbonhidrat</div>
-                            <div className="macro-value">{stats.todayCarbs}g / {settings.dailyCarbsGoal}g</div>
-                            <div className="macro-progress-bar">
-                                <div
-                                    className={`macro-progress-fill ${stats.todayCarbs >= settings.dailyCarbsGoal ? 'goal-met' : ''}`}
-                                    style={{ width: `${Math.min((stats.todayCarbs / settings.dailyCarbsGoal) * 100, 100)}%` }}
-                                />
-                            </div>
-                        </div>
-                        <div className="macro-card card">
-                            <div className="macro-icon">🥑</div>
-                            <div className="macro-label">Yağ</div>
-                            <div className="macro-value">{stats.todayFat}g / {settings.dailyFatGoal}g</div>
-                            <div className="macro-progress-bar">
-                                <div
-                                    className={`macro-progress-fill ${stats.todayFat >= settings.dailyFatGoal ? 'goal-met' : ''}`}
-                                    style={{ width: `${Math.min((stats.todayFat / settings.dailyFatGoal) * 100, 100)}%` }}
-                                />
-                            </div>
-                        </div>
-                    </div>
-
                     {/* Calorie Entries - Modern */}
                     <h3 className="subsection-title">📋 {isToday ? 'Bugünün Kayıtları' : formatSelectedDate() + ' Kayıtları'}</h3>
                     <div className="today-records-container">
