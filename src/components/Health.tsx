@@ -134,7 +134,7 @@ const Health: React.FC = () => {
 
         const newEntry: WorkoutEntry = {
             id: generateId(),
-            date: getLocalDate(),
+            date: selectedDate,
             type: wkType.trim(),
             duration: Number(wkDuration),
             caloriesBurned: Number(wkCalBurned),
@@ -907,6 +907,19 @@ const Health: React.FC = () => {
                         <h2>🏋️ Antrenman Takibi</h2>
                     </div>
 
+                    {/* Date Navigator */}
+                    <div className="date-navigator">
+                        <button className="date-nav-btn" onClick={() => navigateDate('prev')}>◀</button>
+                        <div className="date-nav-center">
+                            <span className="date-nav-label">{isToday ? '📅 Bugün' : '📅 ' + formatSelectedDate()}</span>
+                            <span className="date-nav-date">{selectedDate}</span>
+                        </div>
+                        <button className="date-nav-btn" onClick={() => navigateDate('next')} disabled={isToday}>▶</button>
+                        {!isToday && (
+                            <button className="date-nav-today-btn" onClick={() => navigateDate('today')}>Bugün</button>
+                        )}
+                    </div>
+
                     {/* Modern Workout Add Card */}
                     <div className="calorie-add-card">
                         <div className="calorie-input-row">
@@ -969,16 +982,17 @@ const Health: React.FC = () => {
                     </div>
 
                     {/* Workout Entries - Modern */}
-                    <h3 className="subsection-title">📋 Antrenman Kayıtları</h3>
+                    <h3 className="subsection-title">📋 {isToday ? 'Bugünün Kayıtları' : formatSelectedDate() + ' Kayıtları'}</h3>
                     <div className="today-records-container">
-                        {data.workoutEntries.length === 0 ? (
+                        {data.workoutEntries.filter(w => w.date === selectedDate).length === 0 ? (
                             <div className="empty-state-modern">
                                 <span className="empty-icon">🏋️</span>
-                                <p>Henüz antrenman kaydı eklenmemiş</p>
-                                <span className="empty-hint">Yukarıdan antrenman ekleyerek başla!</span>
+                                <p>{isToday ? 'Bugün henüz antrenman kaydı girmedin' : 'Bu tarihte antrenman kaydı yok'}</p>
+                                <span className="empty-hint">{isToday ? 'Yukarıdan antrenman ekleyerek başla!' : 'İstersen yukarıdan geçmişe dönük kayıt ekleyebilirsin.'}</span>
                             </div>
                         ) : (
                             data.workoutEntries
+                                .filter(w => w.date === selectedDate)
                                 .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
                                 .map((entry) => (
                                     <div key={entry.id} className="record-card" style={{ borderLeft: '4px solid #8b5cf6' }}>
