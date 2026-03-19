@@ -527,13 +527,13 @@ const Health: React.FC = () => {
                         </div>
 
                         {/* Food Search - Diyetkolik Veritabanı */}
-                        <FoodSearch onSelect={(food) => {
-                            setCalFood(food.name);
-                            setCalCalories(String(food.calories));
-                            setCalProtein(String(food.protein));
-                            setCalCarbs(String(food.carbs));
-                            setCalFat(String(food.fat));
-                            if (food.protein || food.carbs || food.fat) {
+                        <FoodSearch onSelect={(_food, serving, macros) => {
+                            setCalFood(`${_food.name} (${serving.name})`);
+                            setCalCalories(String(macros.calories));
+                            setCalProtein(String(macros.protein));
+                            setCalCarbs(String(macros.carbs));
+                            setCalFat(String(macros.fat));
+                            if (macros.protein || macros.carbs || macros.fat) {
                                 setShowMacroExpand(true);
                             }
                         }} />
