@@ -8,7 +8,8 @@ const ProjectMilestones: React.FC<{
     project: Project;
     onToggle: (projectId: string, milestoneId: string) => void;
     onAdd: (projectId: string, title: string) => void;
-}> = ({ project, onToggle, onAdd }) => {
+    onDelete: (projectId: string, milestoneId: string) => void;
+}> = ({ project, onToggle, onAdd, onDelete }) => {
     const [title, setTitle] = useState('');
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -41,6 +42,13 @@ const ProjectMilestones: React.FC<{
                                 {milestone.title}
                             </span>
                         </label>
+                        <button
+                            className="milestone-delete-btn"
+                            onClick={() => onDelete(project.id, milestone.id)}
+                            title="Adımı sil"
+                        >
+                            ×
+                        </button>
                     </div>
                 ))}
             </div>
@@ -203,6 +211,19 @@ const Work: React.FC = () => {
         updateData({
             projects: data.projects.map((p) =>
                 p.id === projectId ? { ...p, milestones: updatedMilestones } : p
+            ),
+        });
+    };
+
+    const handleDeleteMilestone = (projectId: string, milestoneId: string) => {
+        const project = data.projects.find((p) => p.id === projectId);
+        if (!project) return;
+
+        updateData({
+            projects: data.projects.map((p) =>
+                p.id === projectId
+                    ? { ...p, milestones: p.milestones.filter((m) => m.id !== milestoneId) }
+                    : p
             ),
         });
     };
@@ -426,6 +447,7 @@ const Work: React.FC = () => {
                                         project={project}
                                         onToggle={handleToggleMilestone}
                                         onAdd={handleAddMilestone}
+                                        onDelete={handleDeleteMilestone}
                                     />
 
                                     <div className="project-actions">
