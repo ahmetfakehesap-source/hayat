@@ -261,32 +261,161 @@
     border-top: 1px solid var(--border-color);
 }
 
-.milestones-section h4 {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin: 0;
-}
-
-.milestone-item {
+.milestones-header-inline {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+}
+
+.milestones-header-inline h4 {
     font-size: 0.875rem;
-}
-
-.milestone-item input[type="checkbox"] {
-    accent-color: var(--color-success);
-    cursor: pointer;
-}
-
-.milestone-item span {
+    font-weight: 700;
     color: var(--text-primary);
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-.milestone-item span.completed {
+.milestone-badge {
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    padding: 0.1rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.milestones-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.milestone-item.modern {
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    padding: 0.5rem 0.75rem;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.milestone-item.modern:hover {
+    background: var(--bg-tertiary);
+    border-color: var(--border-color);
+}
+
+.milestone-label {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    font-size: 0.875rem;
+    user-select: none;
+    position: relative;
+    margin: 0;
+}
+
+.milestone-checkbox {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.checkbox-custom {
+    height: 18px;
+    width: 18px;
+    background-color: var(--bg-primary);
+    border: 2px solid var(--border-color);
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.milestone-item.modern:hover input ~ .checkbox-custom {
+    border-color: var(--color-primary);
+}
+
+.milestone-checkbox:checked ~ .checkbox-custom {
+    background-color: var(--color-success);
+    border-color: var(--color-success);
+}
+
+.checkbox-custom:after {
+    content: "";
+    display: none;
+    width: 4px;
+    height: 8px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+    margin-bottom: 2px;
+}
+
+.milestone-checkbox:checked ~ .checkbox-custom:after {
+    display: block;
+}
+
+.milestone-label span {
+    color: var(--text-primary);
+    transition: all 0.2s ease;
+    line-height: 1.4;
+    word-break: break-word;
+}
+
+.milestone-label span.completed {
     text-decoration: line-through;
-    opacity: 0.6;
+    color: var(--text-tertiary);
+}
+
+.milestone-add-form {
+    margin-top: 0.25rem;
+}
+
+.milestone-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--bg-secondary);
+    border: 1px dashed var(--border-color);
+    border-radius: 8px;
+    padding: 0.5rem 0.75rem;
+    transition: all 0.2s ease;
+}
+
+.milestone-input-wrapper:focus-within {
+    border-color: var(--color-primary);
+    border-style: solid;
+    background: var(--bg-primary);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.plus-icon {
+    color: var(--text-tertiary);
+    font-size: 1rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.milestone-input-wrapper input {
+    border: none;
+    background: transparent;
+    flex: 1;
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    outline: none;
+    font-weight: 500;
+}
+
+.milestone-input-wrapper input::placeholder {
+    color: var(--text-tertiary);
+    font-weight: 400;
 }
 
 .project-actions {

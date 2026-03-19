@@ -4,6 +4,62 @@ import { generateId, getLocalDate, dateToLocalString } from '../utils/storage';
 import type { Task, Project, Milestone } from '../types';
 import './Work.css';
 
+const ProjectMilestones: React.FC<{
+    project: Project;
+    onToggle: (projectId: string, milestoneId: string) => void;
+    onAdd: (projectId: string, title: string) => void;
+}> = ({ project, onToggle, onAdd }) => {
+    const [title, setTitle] = useState('');
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (title.trim()) {
+            onAdd(project.id, title);
+            setTitle('');
+        }
+    };
+
+    return (
+        <div className="milestones-section">
+            <div className="milestones-header-inline">
+                <h4>Proje Adımları</h4>
+                <span className="milestone-badge">{project.milestones.length}</span>
+            </div>
+            
+            <div className="milestones-list">
+                {project.milestones.map((milestone) => (
+                    <div key={milestone.id} className="milestone-item modern">
+                        <label className="milestone-label">
+                            <input
+                                type="checkbox"
+                                className="milestone-checkbox"
+                                checked={milestone.completed}
+                                onChange={() => onToggle(project.id, milestone.id)}
+                            />
+                            <div className="checkbox-custom"></div>
+                            <span className={milestone.completed ? 'completed' : ''}>
+                                {milestone.title}
+                            </span>
+                        </label>
+                    </div>
+                ))}
+            </div>
+
+            <form className="milestone-add-form" onSubmit={handleSubmit}>
+                <div className="milestone-input-wrapper">
+                    <span className="plus-icon">＋</span>
+                    <input
+                        type="text"
+                        placeholder="Yeni adım ekle..."
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
+                    />
+                </div>
+            </form>
+        </div>
+    );
+};
+
 const Work: React.FC = () => {
     const { data, updateData } = useApp();
     const [showProjectModal, setShowProjectModal] = useState(false);
@@ -366,30 +422,11 @@ const Work: React.FC = () => {
                                     )}
 
                                     {/* Milestones */}
-                                    <div className="milestones-section">
-                                        <h4>Kilometre Taşları ({project.milestones.length})</h4>
-                                        {project.milestones.map((milestone) => (
-                                            <div key={milestone.id} className="milestone-item">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={milestone.completed}
-                                                    onChange={() => handleToggleMilestone(project.id, milestone.id)}
-                                                />
-                                                <span className={milestone.completed ? 'completed' : ''}>
-                                                    {milestone.title}
-                                                </span>
-                                            </div>
-                                        ))}
-                                        <button
-                                            className="btn btn-secondary btn-sm"
-                                            onClick={() => {
-                                                const title = prompt('Kilometre taşı adı:');
-                                                if (title) handleAddMilestone(project.id, title);
-                                            }}
-                                        >
-                                            ➕ Kilometre Taşı Ekle
-                                        </button>
-                                    </div>
+                                    <ProjectMilestones
+                                        project={project}
+                                        onToggle={handleToggleMilestone}
+                                        onAdd={handleAddMilestone}
+                                    />
 
                                     <div className="project-actions">
                                         <button
