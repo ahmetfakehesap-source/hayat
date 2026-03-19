@@ -2426,3 +2426,113 @@
         font-size: 0.875rem;
     }
 }
+
+/* ===== Pending Foods Cart (Multi-Food) ===== */
+.pending-foods-cart {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.pending-food-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--bg-secondary);
+}
+
+.pf-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.pf-count {
+    font-size: 0.8rem;
+    color: var(--text-tertiary);
+    margin-right: 0.4rem;
+}
+
+.pf-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--text-primary);
+}
+
+.pf-macros {
+    font-size: 0.85rem;
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.pf-mini-macros {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-weight: 400;
+    margin-left: 0.4rem;
+}
+
+.pf-remove {
+    background: rgba(255, 59, 48, 0.1);
+    color: var(--danger-color);
+    border: none;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.pf-remove:hover {
+    background: var(--danger-color);
+    color: white;
+}
+
+.pending-food-total {
+    background: var(--bg-secondary);
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    border-top: 2px solid var(--border-color);
+}
+
+.pft-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    letter-spacing: 0.05em;
+}
+
+.pft-value {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.pft-cal {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.pft-mac {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+/* Manual Add Section */
+.manual-add-section {
+    margin-top: 0.5rem;
+    padding-top: 1rem;
+    border-top: 1px dashed var(--border-color);
+}

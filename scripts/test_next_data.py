@@ -1,17 +1,25 @@
-import requests, re
-from bs4 import BeautifulSoup
+import requests, json
 
-r = requests.get('https://www.diyetkolik.com/kac-kalori/yumurta', headers={'User-Agent':'Mozilla/5.0'}, timeout=10)
-soup = BeautifulSoup(r.text, 'html.parser')
+with open('scripts/diyetkolik_foods_v2.json', 'r', encoding='utf-8') as f:
+    foods = json.load(f)
 
-# Find ALL spans with class containing 'lbl'
-for s in soup.find_all('span'):
-    cls = s.get('class', [])
-    cls_str = ' '.join(cls) if cls else ''
-    if 'lbl' in cls_str or 'calorie' in cls_str or 'protein' in cls_str:
-        print(f"class={cls_str:40s} text={s.get_text(strip=True)}")
+db_names = {f['name'].lower() for f in foods}
 
-# Also check itemProp attributes
-print("\n--- itemProp spans ---")
-for s in soup.find_all(attrs={'itemprop': True}):
-    print(f"itemProp={s.get('itemprop'):30s} class={' '.join(s.get('class',[]))} text={s.get_text(strip=True)}")
+# Let's test a couple URLs that failed
+urls = [
+    "https://www.diyetkolik.com/kac-kalori/1-kase-kelloggsc-coco-pops-cokotop",
+    "https://www.diyetkolik.com/kac-kalori/tavuk-suyuna-sehriye-corbasi",
+    "https://www.diyetkolik.com/kac-kalori/uno-denge-tam-bugdayli-ekmek",
+    "https://www.diyetkolik.com/kac-kalori/yulaf-ezmesi-1"
+]
+
+for url in urls:
+    try:
+        r = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'}, allow_redirects=False, timeout=5)
+        print(f"URL: {url}")
+        print(f"Status: {r.status_code}")
+        if r.status_code != 200:
+            print(f"Location: {r.headers.get('Location', 'No location header')}")
+        print("---")
+    except Exception as e:
+        print(f"Error {url}: {e}")

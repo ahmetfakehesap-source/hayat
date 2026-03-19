@@ -56,3 +56,75 @@ export function searchLocalFoods(query: string): FoodItem[] {
     const q = query.toLowerCase().trim();
     return getAllFoods().filter(f => f.name.toLowerCase().includes(q)).slice(0, 12);
 }
+
+// ============================================
+// Recent & Frequent Foods (localStorage)
+// ============================================
+
+interface RecentFoodEntry {
+    foodIndex: number;
+    count: number;
+    lastUsed: number;
+}
+
+const RECENT_FOODS_KEY = 'hayat_recent_foods_v2';
+
+function loadRecentEntries(): RecentFoodEntry[] {
+    try {
+        const data = localStorage.getItem(RECENT_FOODS_KEY);
+        if (data) return JSON.parse(data);
+    } catch (e) {
+        console.error("Failed to load recent foods", e);
+    }
+    return [];
+}
+
+function saveRecentEntries(entries: RecentFoodEntry[]) {
+    try {
+        localStorage.setItem(RECENT_FOODS_KEY, JSON.stringify(entries));
+    } catch (e) {
+        console.error("Failed to save recent foods", e);
+    }
+}
+
+export function addRecentFood(food: FoodItem) {
+    const entries = loadRecentEntries();
+    const existing = entries.find(e => e.foodIndex === food._index);
+    
+    if (existing) {
+        existing.count += 1;
+        existing.lastUsed = Date.now();
+    } else {
+        entries.push({
+            foodIndex: food._index,
+            count: 1,
+            lastUsed: Date.now()
+        });
+    }
+    
+    // Keep max 100 tracking entries
+    if (entries.length > 100) {
+        entries.sort((a, b) => b.lastUsed - a.lastUsed);
+        entries.length = 100;
+    }
+    saveRecentEntries(entries);
+}
+
+export function getRecentFoods(limit: number = 5): FoodItem[] {
+    const entries = loadRecentEntries();
+    const sorted = [...entries].sort((a, b) => b.lastUsed - a.lastUsed).slice(0, limit);
+    const all = getAllFoods();
+    return sorted.map(e => all[e.foodIndex]).filter(Boolean);
+}
+
+export function getFrequentFoods(limit: number = 5): FoodItem[] {
+    const entries = loadRecentEntries();
+    // Sort by count descending, then by lastUsed
+    const sorted = [...entries].sort((a, b) => {
+        if (b.count !== a.count) return b.count - a.count;
+        return b.lastUsed - a.lastUsed;
+    }).slice(0, limit);
+    
+    const all = getAllFoods();
+    return sorted.map(e => all[e.foodIndex]).filter(Boolean);
+}

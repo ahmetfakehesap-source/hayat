@@ -37,6 +37,17 @@ const Health: React.FC = () => {
         return `${d.getDate()} ${d.toLocaleDateString('tr-TR', { month: 'long' })} ${days[d.getDay()]}`;
     };
 
+    // Multi-food cart state
+    interface PendingFood {
+        id: string;
+        name: string;
+        calories: number;
+        protein: number;
+        carbs: number;
+        fat: number;
+    }
+    const [pendingFoods, setPendingFoods] = useState<PendingFood[]>([]);
+
     // Inline calorie form state
     const [calMeal, setCalMeal] = useState<CalorieEntry['meal']>('breakfast');
     const [calFood, setCalFood] = useState('');
@@ -528,66 +539,117 @@ const Health: React.FC = () => {
 
                         {/* Food Search - Diyetkolik Veritabanı */}
                         <FoodSearch onSelect={(_food, serving, macros) => {
-                            setCalFood(`${_food.name} (${serving.name})`);
-                            setCalCalories(String(macros.calories));
-                            setCalProtein(String(macros.protein));
-                            setCalCarbs(String(macros.carbs));
-                            setCalFat(String(macros.fat));
-                            if (macros.protein || macros.carbs || macros.fat) {
-                                setShowMacroExpand(true);
-                            }
+                            setPendingFoods(prev => [...prev, {
+                                id: Math.random().toString(36).substr(2, 9),
+                                name: `${_food.name} (${serving.name})`,
+                                calories: macros.calories,
+                                protein: macros.protein,
+                                carbs: macros.carbs,
+                                fat: macros.fat
+                            }]);
                         }} />
 
-                        {/* Food + Calorie Input Row */}
-                        <div className="calorie-input-row">
-                            <div className="calorie-input-field food-field">
-                                <span className="input-icon">🍽️</span>
-                                <input
-                                    type="text"
-                                    placeholder="Ne yedin? (örn: Yulaf + Muz)"
-                                    value={calFood}
-                                    onChange={(e) => setCalFood(e.target.value)}
-                                    onKeyDown={(e) => { if (e.key === 'Enter') handleAddCalorieInline(); }}
-                                />
+                        {/* Pending Foods Cart */}
+                        {pendingFoods.length > 0 && (
+                            <div className="pending-foods-cart">
+                                {pendingFoods.map((pf, idx) => (
+                                    <div key={pf.id} className="pending-food-item">
+                                        <div className="pf-info">
+                                            <span className="pf-count">{idx + 1}.</span>
+                                            <span className="pf-name">{pf.name}</span>
+                                            <span className="pf-macros">{pf.calories} kcal <span className="pf-mini-macros">(P:{pf.protein}g K:{pf.carbs}g Y:{pf.fat}g)</span></span>
+                                        </div>
+                                        <button className="pf-remove" onClick={() => setPendingFoods(prev => prev.filter(p => p.id !== pf.id))}>✕</button>
+                                    </div>
+                                ))}
+                                <div className="pending-food-total">
+                                    <div className="pft-label">Toplam:</div>
+                                    <div className="pft-value">
+                                        <span className="pft-cal">{pendingFoods.reduce((sum, f) => sum + f.calories, 0)} kcal</span>
+                                        <span className="pft-mac">
+                                            P: {Math.round(pendingFoods.reduce((sum, f) => sum + f.protein, 0) * 10) / 10}g | 
+                                            K: {Math.round(pendingFoods.reduce((sum, f) => sum + f.carbs, 0) * 10) / 10}g | 
+                                            Y: {Math.round(pendingFoods.reduce((sum, f) => sum + f.fat, 0) * 10) / 10}g
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
-                            <div className="calorie-input-field kcal-field">
-                                <input
-                                    type="number"
-                                    placeholder="0"
-                                    value={calCalories}
-                                    onChange={(e) => setCalCalories(e.target.value)}
-                                />
-                                <span className="input-suffix">kcal</span>
-                            </div>
-                        </div>
+                        )}
 
-                        {/* Expandable Macros */}
+                        {/* Expandable Manual Mode */}
                         <button className="macro-expand-btn" onClick={() => setShowMacroExpand(!showMacroExpand)}>
-                            {showMacroExpand ? '▲ Makroları Gizle' : '▼ Makro Bilgisi Ekle (Protein, Karb, Yağ)'}
+                            {showMacroExpand ? '▲ Manuel Eklemeyi Gizle' : '▼ Bulamadınız mı? Manuel Ekle (Metin, Kalori, Makro)'}
                         </button>
+                        
                         {showMacroExpand && (
-                            <div className="macro-inputs-row">
-                                <div className="macro-input-field">
-                                    <span className="macro-input-icon">🥩</span>
-                                    <input type="number" placeholder="0" value={calProtein} onChange={(e) => setCalProtein(e.target.value)} />
-                                    <span className="macro-input-label">Protein (g)</span>
+                            <div className="manual-add-section">
+                                <div className="calorie-input-row">
+                                    <div className="calorie-input-field food-field">
+                                        <span className="input-icon">🍽️</span>
+                                        <input
+                                            type="text"
+                                            placeholder="Ne yedin? (örn: Ev yemeği)"
+                                            value={calFood}
+                                            onChange={(e) => setCalFood(e.target.value)}
+                                            onKeyDown={(e) => { if (e.key === 'Enter') handleAddCalorieInline(); }}
+                                        />
+                                    </div>
+                                    <div className="calorie-input-field kcal-field">
+                                        <input
+                                            type="number"
+                                            placeholder="0"
+                                            value={calCalories}
+                                            onChange={(e) => setCalCalories(e.target.value)}
+                                        />
+                                        <span className="input-suffix">kcal</span>
+                                    </div>
                                 </div>
-                                <div className="macro-input-field">
-                                    <span className="macro-input-icon">🍞</span>
-                                    <input type="number" placeholder="0" value={calCarbs} onChange={(e) => setCalCarbs(e.target.value)} />
-                                    <span className="macro-input-label">Karb (g)</span>
-                                </div>
-                                <div className="macro-input-field">
-                                    <span className="macro-input-icon">🧈</span>
-                                    <input type="number" placeholder="0" value={calFat} onChange={(e) => setCalFat(e.target.value)} />
-                                    <span className="macro-input-label">Yağ (g)</span>
+
+                                <div className="macro-inputs-row">
+                                    <div className="macro-input-field">
+                                        <span className="macro-input-icon">🥩</span>
+                                        <input type="number" placeholder="0" value={calProtein} onChange={(e) => setCalProtein(e.target.value)} />
+                                        <span className="macro-input-label">Protein (g)</span>
+                                    </div>
+                                    <div className="macro-input-field">
+                                        <span className="macro-input-icon">🍞</span>
+                                        <input type="number" placeholder="0" value={calCarbs} onChange={(e) => setCalCarbs(e.target.value)} />
+                                        <span className="macro-input-label">Karb (g)</span>
+                                    </div>
+                                    <div className="macro-input-field">
+                                        <span className="macro-input-icon">🧈</span>
+                                        <input type="number" placeholder="0" value={calFat} onChange={(e) => setCalFat(e.target.value)} />
+                                        <span className="macro-input-label">Yağ (g)</span>
+                                    </div>
                                 </div>
                             </div>
                         )}
 
                         {/* Add Button */}
-                        <button className="calorie-add-btn" onClick={handleAddCalorieInline}>
-                            ➕ Kaydet
+                        <button 
+                            className="calorie-add-btn" 
+                            disabled={pendingFoods.length === 0 && (!calFood || !calCalories)}
+                            onClick={() => {
+                                if (pendingFoods.length > 0) {
+                                    const entry = {
+                                        id: generateId(),
+                                        date: selectedDate,
+                                        time: `${new Date().getHours().toString().padStart(2, '0')}:${new Date().getMinutes().toString().padStart(2, '0')}`,
+                                        meal: calMeal,
+                                        food: pendingFoods.map(p => p.name).join(' + '),
+                                        calories: pendingFoods.reduce((sum, f) => sum + f.calories, 0),
+                                        protein: Math.round(pendingFoods.reduce((sum, f) => sum + f.protein, 0) * 10) / 10,
+                                        carbs: Math.round(pendingFoods.reduce((sum, f) => sum + f.carbs, 0) * 10) / 10,
+                                        fat: Math.round(pendingFoods.reduce((sum, f) => sum + f.fat, 0) * 10) / 10,
+                                    };
+                                    updateData({ calorieEntries: [...data.calorieEntries, entry] });
+                                    setPendingFoods([]);
+                                } else {
+                                    handleAddCalorieInline();
+                                }
+                            }}
+                        >
+                            ➕ {pendingFoods.length > 0 ? "Toplu Kaydet" : "Kaydet"}
                         </button>
                     </div>
 

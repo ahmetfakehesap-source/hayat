@@ -142,6 +142,35 @@
     color: var(--text-secondary);
 }
 
+/* History / Favorites View */
+.food-history-view {
+    display: flex;
+    flex-direction: column;
+}
+
+.food-history-section {
+    display: flex;
+    flex-direction: column;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.food-history-section:last-child {
+    border-bottom: none;
+}
+
+.food-history-header {
+    background: var(--bg-secondary);
+    padding: 0.4rem 0.85rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+
 /* ===== Serving Size Selector Panel ===== */
 .food-serving-panel {
     margin-top: 0.75rem;

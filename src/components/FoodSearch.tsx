@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import type { FoodItem, Serving } from '../utils/foodDatabase';
-import { searchLocalFoods, calcServingMacros } from '../utils/foodDatabase';
+import { searchLocalFoods, calcServingMacros, getRecentFoods, getFrequentFoods, addRecentFood } from '../utils/foodDatabase';
 import './FoodSearch.css';
 
 interface FoodSearchProps {
@@ -10,6 +10,8 @@ interface FoodSearchProps {
 const FoodSearch: React.FC<FoodSearchProps> = ({ onSelect }) => {
     const [query, setQuery] = useState('');
     const [results, setResults] = useState<FoodItem[]>([]);
+    const [recentFoods, setRecentFoods] = useState<FoodItem[]>([]);
+    const [frequentFoods, setFrequentFoods] = useState<FoodItem[]>([]);
     const [showResults, setShowResults] = useState(false);
     const [selectedFood, setSelectedFood] = useState<FoodItem | null>(null);
     const [selectedServing, setSelectedServing] = useState<Serving | null>(null);
@@ -26,18 +28,28 @@ const FoodSearch: React.FC<FoodSearchProps> = ({ onSelect }) => {
         return () => document.removeEventListener('mousedown', handler);
     }, []);
 
+    const loadHistory = () => {
+        setRecentFoods(getRecentFoods(5));
+        setFrequentFoods(getFrequentFoods(5));
+    };
+
+    const handleFocus = () => {
+        if (!selectedFood) {
+            loadHistory();
+            setShowResults(true);
+        }
+    };
+
     const handleSearch = useCallback((value: string) => {
         setQuery(value);
         setSelectedFood(null);
         setSelectedServing(null);
-        if (value.length < 2) {
+        if (value.trim().length < 2) {
             setResults([]);
-            setShowResults(false);
             return;
         }
         const found = searchLocalFoods(value);
         setResults(found);
-        setShowResults(true);
     }, []);
 
     const handleFoodClick = (food: FoodItem) => {
@@ -58,6 +70,7 @@ const FoodSearch: React.FC<FoodSearchProps> = ({ onSelect }) => {
     const handleConfirm = () => {
         if (!selectedFood || !selectedServing) return;
         const macros = calcServingMacros(selectedFood, selectedServing);
+        addRecentFood(selectedFood); // Save to history
         onSelect(selectedFood, selectedServing, macros);
         // Reset
         setSelectedFood(null);
@@ -68,6 +81,30 @@ const FoodSearch: React.FC<FoodSearchProps> = ({ onSelect }) => {
     const currentMacros = selectedFood && selectedServing
         ? calcServingMacros(selectedFood, selectedServing)
         : null;
+
+    const renderFoodItem = (food: FoodItem, i: number, prefix: string = '') => (
+        <button
+            key={`${prefix}-${food.name}-${i}`}
+            className="food-result-item"
+            onClick={() => handleFoodClick(food)}
+        >
+            <div className="food-result-left">
+                <span className="food-result-badge">🍽️</span>
+                <div className="food-result-info">
+                    <span className="food-result-name">{food.name}</span>
+                    <span className="food-result-serving">
+                        {food.servings.length > 1 
+                            ? `${food.servings.length} porsiyon seçeneği` 
+                            : '100g başına'}
+                    </span>
+                </div>
+            </div>
+            <div className="food-result-nutrition">
+                <span className="food-result-cal">{food.calories} kcal</span>
+                <span className="food-result-per100">/ 100g</span>
+            </div>
+        </button>
+    );
 
     return (
         <div className="food-search" ref={containerRef}>
@@ -80,45 +117,45 @@ const FoodSearch: React.FC<FoodSearchProps> = ({ onSelect }) => {
                         placeholder="Yemek ara... (örn: yumurta, pilav, döner)"
                         value={query}
                         onChange={(e) => handleSearch(e.target.value)}
-                        onFocus={() => results.length > 0 && !selectedFood && setShowResults(true)}
+                        onFocus={handleFocus}
                     />
                 </div>
             </div>
 
             {/* Search Results Dropdown */}
-            {showResults && results.length > 0 && (
+            {showResults && (
                 <div className="food-search-results">
-                    {results.map((food, i) => (
-                        <button
-                            key={`${food.name}-${i}`}
-                            className="food-result-item"
-                            onClick={() => handleFoodClick(food)}
-                        >
-                            <div className="food-result-left">
-                                <span className="food-result-badge">🍽️</span>
-                                <div className="food-result-info">
-                                    <span className="food-result-name">{food.name}</span>
-                                    <span className="food-result-serving">
-                                        {food.servings.length > 1 
-                                            ? `${food.servings.length} porsiyon seçeneği` 
-                                            : '100g başına'}
-                                    </span>
+                    {query.trim().length >= 2 ? (
+                        /* Standard Search Results */
+                        results.length > 0 ? (
+                            results.map((food, i) => renderFoodItem(food, i, 'search'))
+                        ) : (
+                            <div className="food-result-empty">
+                                😕 Sonuç bulunamadı. Manuel olarak girebilirsiniz.
+                            </div>
+                        )
+                    ) : (
+                        /* History / Favorites View */
+                        <div className="food-history-view">
+                            {frequentFoods.length > 0 && (
+                                <div className="food-history-section">
+                                    <div className="food-history-header">⭐ Sık Kullananlar</div>
+                                    {frequentFoods.map((f, i) => renderFoodItem(f, i, 'freq'))}
                                 </div>
-                            </div>
-                            <div className="food-result-nutrition">
-                                <span className="food-result-cal">{food.calories} kcal</span>
-                                <span className="food-result-per100">/ 100g</span>
-                            </div>
-                        </button>
-                    ))}
-                </div>
-            )}
-
-            {showResults && query.length >= 2 && results.length === 0 && (
-                <div className="food-search-results">
-                    <div className="food-result-empty">
-                        😕 Sonuç bulunamadı. Manuel olarak girebilirsiniz.
-                    </div>
+                            )}
+                            {recentFoods.length > 0 && (
+                                <div className="food-history-section">
+                                    <div className="food-history-header">🕒 Son Kullanılanlar</div>
+                                    {recentFoods.filter(f => !frequentFoods.find(ff => ff._index === f._index)).slice(0, 5).map((f, i) => renderFoodItem(f, i, 'rec'))}
+                                </div>
+                            )}
+                            {frequentFoods.length === 0 && recentFoods.length === 0 && (
+                                <div className="food-result-empty">
+                                    Arama yapmak için yazmaya başlayın.
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -168,7 +205,7 @@ const FoodSearch: React.FC<FoodSearchProps> = ({ onSelect }) => {
                     </div>
 
                     <button className="food-serving-confirm" onClick={handleConfirm}>
-                        ✅ Kaydet
+                        ➕ Kaydet + (Listeye Ekle)
                     </button>
                 </div>
             )}
