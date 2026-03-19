@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useApp } from '../context/AppContext';
 import { generateId, formatDate, getThisWeekDates, getLocalDate, dateToLocalString } from '../utils/storage';
+import { addCustomFood } from '../utils/foodDatabase';
 import type { CalorieEntry, WorkoutEntry, BodyMeasurement, Recipe, HealthProduct, DailyScore } from '../types';
 import FoodSearch from './FoodSearch';
 import './Health.css';
@@ -11,6 +12,7 @@ const Health: React.FC = () => {
     const [showCalorieModal, setShowCalorieModal] = useState(false);
     const [showRecipeModal, setShowRecipeModal] = useState(false);
     const [showProductModal, setShowProductModal] = useState(false);
+    const [showDataModal, setShowDataModal] = useState(false);
     const [showSettingsModal, setShowSettingsModal] = useState(false);
     const [editingRecipe, setEditingRecipe] = useState<Recipe | null>(null);
     const [editingCalorie, setEditingCalorie] = useState<CalorieEntry | null>(null);
@@ -1123,13 +1125,22 @@ const Health: React.FC = () => {
                 <div className="tab-content fade-in">
                     <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                         <h2>🛒 Sağlıklı Ürünler</h2>
-                        <button
-                            className="calorie-add-btn"
-                            style={{ width: 'auto', padding: '0.625rem 1.25rem', fontSize: '0.875rem' }}
-                            onClick={() => setShowProductModal(true)}
-                        >
-                            ➕ Ürün Ekle
-                        </button>
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                            <button
+                                className="calorie-add-btn"
+                                style={{ width: 'auto', padding: '0.625rem 1.25rem', fontSize: '0.875rem', background: '#8b5cf6' }}
+                                onClick={() => setShowDataModal(true)}
+                            >
+                                ➕ Data Ekle
+                            </button>
+                            <button
+                                className="calorie-add-btn"
+                                style={{ width: 'auto', padding: '0.625rem 1.25rem', fontSize: '0.875rem' }}
+                                onClick={() => setShowProductModal(true)}
+                            >
+                                ➕ Ürün Ekle
+                            </button>
+                        </div>
                     </div>
 
                     {/* Search */}
@@ -1532,6 +1543,69 @@ const Health: React.FC = () => {
                                 <input name="prepTime" type="number" className="input" defaultValue={editingRecipe?.prepTime} />
                             </div>
                             <button type="submit" className="btn btn-primary">{editingRecipe ? 'Kaydet' : 'Ekle'}</button>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {showDataModal && (
+                <div className="modal-overlay" onClick={() => setShowDataModal(false)}>
+                    <div className="modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2 className="modal-title">Özel Besin Datası Ekle</h2>
+                            <button className="modal-close" onClick={() => setShowDataModal(false)}>×</button>
+                        </div>
+                        <form onSubmit={(e) => {
+                            e.preventDefault();
+                            const formData = new FormData(e.currentTarget);
+                            const name = formData.get('name') as string;
+                            if(!name) return;
+                            
+                            addCustomFood({
+                                name,
+                                calories: Number(formData.get('calories')),
+                                protein: Number(formData.get('protein')) || 0,
+                                carbs: Number(formData.get('carbs')) || 0,
+                                fat: Number(formData.get('fat')) || 0,
+                                servings: [
+                                    { name: '100 Gram', gram: 100 },
+                                    { name: '1 Porsiyon', gram: Number(formData.get('portionGram')) || 200 },
+                                    { name: '1 Adet', gram: Number(formData.get('pieceGram')) || 100 }
+                                ]
+                            });
+                            setShowDataModal(false);
+                            alert('Besin başarıyla veritabanına eklendi! Arama çubuğundan bulabilirsiniz.');
+                        }}>
+                            <div className="input-group">
+                                <label>Besin Adı *</label>
+                                <input name="name" type="text" className="input" placeholder="Örn: Annemin Keki" required />
+                            </div>
+                            <div className="input-group">
+                                <label>100 Gram İçin Kalori (kcal) *</label>
+                                <input name="calories" type="number" className="input" placeholder="0" required />
+                            </div>
+                            <div className="input-group">
+                                <label>100 Gram İçin Protein (g)</label>
+                                <input name="protein" type="number" step="0.1" className="input" placeholder="0" />
+                            </div>
+                            <div className="input-group">
+                                <label>100 Gram İçin Karbonhidrat (g)</label>
+                                <input name="carbs" type="number" step="0.1" className="input" placeholder="0" />
+                            </div>
+                            <div className="input-group">
+                                <label>100 Gram İçin Yağ (g)</label>
+                                <input name="fat" type="number" step="0.1" className="input" placeholder="0" />
+                            </div>
+                            <hr style={{ margin: '1rem 0', borderColor: 'var(--border-color)', opacity: 0.5 }} />
+                            <div className="input-group">
+                                <label>1 Porsiyon Kaç Gram? (Opsiyonel)</label>
+                                <input name="portionGram" type="number" className="input" placeholder="Varsayılan: 200" />
+                            </div>
+                            <div className="input-group">
+                                <label>1 Adet Kaç Gram? (Opsiyonel)</label>
+                                <input name="pieceGram" type="number" className="input" placeholder="Varsayılan: 100" />
+                            </div>
+                            <button type="submit" className="btn btn-primary">Veritabanına Ekle</button>
                         </form>
                     </div>
                 </div>

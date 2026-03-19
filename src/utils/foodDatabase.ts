@@ -18,12 +18,42 @@ export interface FoodItem {
     _index: number;      // internal index for serving lookup
 }
 
+const CUSTOM_FOODS_KEY = 'hayat_custom_foods_v1';
+
+function loadCustomFoods(): FoodItem[] {
+    try {
+        const data = localStorage.getItem(CUSTOM_FOODS_KEY);
+        if (data) return JSON.parse(data);
+    } catch (e) {
+        console.error("Failed to load custom foods", e);
+    }
+    return [];
+}
+
+export function addCustomFood(food: Omit<FoodItem, '_index'>) {
+    const customFoods = loadCustomFoods();
+    // Assign a negative index to distinguish custom foods
+    const newFood: FoodItem = { ...food, _index: -(customFoods.length + 1) };
+    customFoods.push(newFood);
+    
+    try {
+        localStorage.setItem(CUSTOM_FOODS_KEY, JSON.stringify(customFoods));
+    } catch (e) {
+        console.error("Failed to save custom food", e);
+    }
+    
+    // Invalidate or update cache
+    if (_cache) {
+        _cache.unshift(newFood);
+    }
+}
+
 // Lazy-loaded cache
 let _cache: FoodItem[] | null = null;
 
 function getAllFoods(): FoodItem[] {
     if (!_cache) {
-        _cache = DIYETKOLIK_FOODS.map(([name, calories, protein, carbs, fat], index) => {
+        const base = DIYETKOLIK_FOODS.map(([name, calories, protein, carbs, fat], index) => {
             const servingTuples: ServingTuple[] = DIYETKOLIK_SERVINGS[index] || [];
             const servings: Serving[] = servingTuples.map(([sname, gram]) => ({ name: sname, gram }));
             
@@ -34,6 +64,9 @@ function getAllFoods(): FoodItem[] {
             
             return { name, calories, protein, carbs, fat, servings, _index: index };
         });
+        
+        const custom = loadCustomFoods();
+        _cache = [...custom, ...base];
     }
     return _cache;
 }
