@@ -199,30 +199,23 @@ const Work: React.FC = () => {
             {/* Tasks Tab */}
             {activeTab === 'tasks' && (
                 <div className="tab-content fade-in">
-                    {/* Inline Quick-Add Task */}
-                    <div className="inline-form">
-                        <div className="inline-form-row">
-                            <div className="inline-field">
-                                <label>Görev</label>
-                                <input
-                                    type="text"
-                                    placeholder="Yeni görev yaz..."
-                                    value={taskTitle}
-                                    onChange={(e) => setTaskTitle(e.target.value)}
-                                    onKeyDown={(e) => { if (e.key === 'Enter') handleAddTaskInline(); }}
-                                />
-                            </div>
-                            <div className="inline-field field-select">
-                                <label>Kategori</label>
-                                <input
-                                    type="text"
-                                    placeholder="İş, Kişisel..."
-                                    value={taskCategory}
-                                    onChange={(e) => setTaskCategory(e.target.value)}
-                                    onKeyDown={(e) => { if (e.key === 'Enter') handleAddTaskInline(); }}
-                                />
-                            </div>
-                            <button className="btn-add" onClick={handleAddTaskInline}>➕ Ekle</button>
+                    {/* Sleek Task Input */}
+                    <div className="sleek-task-input-container">
+                        <div className="sleek-task-input">
+                            <span className="input-icon">✨</span>
+                            <input
+                                type="text"
+                                placeholder="Aklına gelen görevi yaz ve Enter'a bas..."
+                                value={taskTitle}
+                                onChange={(e) => setTaskTitle(e.target.value)}
+                                onKeyDown={(e) => { if (e.key === 'Enter') handleAddTaskInline(); }}
+                                autoFocus
+                            />
+                            {taskTitle && (
+                                <button className="sleek-enter-btn" onClick={handleAddTaskInline}>
+                                    Ekle ↵
+                                </button>
+                            )}
                         </div>
                     </div>
 
@@ -424,93 +417,73 @@ const Work: React.FC = () => {
             )}
 
 
-            {/* Project Modal */}
+            {/* Minimal Project Modal */}
             {showProjectModal && (
-                <div className="modal-overlay" onClick={() => setShowProjectModal(false)}>
-                    <div className="modal" onClick={(e) => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h2 className="modal-title">
-                                {editingProject ? 'Proje Düzenle' : 'Yeni Proje Ekle'}
-                            </h2>
-                            <button className="modal-close" onClick={() => setShowProjectModal(false)}>
-                                ×
-                            </button>
+                <div className="minimal-modal-overlay" onClick={() => setShowProjectModal(false)}>
+                    <div className="minimal-modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="minimal-modal-header">
+                            <h2>{editingProject ? 'Projeyi Düzenle' : 'Yeni Proje Başlat'}</h2>
+                            <button className="minimal-close" title="Kapat" onClick={() => setShowProjectModal(false)}>&times;</button>
                         </div>
-                        <form onSubmit={handleAddProject}>
-                            <div className="input-group">
-                                <label htmlFor="project-name">Proje Adı *</label>
+                        
+                        <form className="minimal-form" onSubmit={handleAddProject}>
+                            <div className="minimal-field title-field">
                                 <input
-                                    id="project-name"
                                     name="name"
                                     type="text"
-                                    className="input"
+                                    placeholder="Projenin Adı Nedir?"
                                     defaultValue={editingProject?.name}
                                     required
+                                    autoFocus
                                 />
                             </div>
-                            <div className="input-group">
-                                <label htmlFor="project-start">Başlangıç Tarihi *</label>
-                                <input
-                                    id="project-start"
-                                    name="startDate"
-                                    type="date"
-                                    className="input"
-                                    defaultValue={editingProject?.startDate}
-                                    required
-                                />
+
+                            <div className="minimal-row">
+                                <div className="minimal-field">
+                                    <label>Başlangıç</label>
+                                    <input name="startDate" type="date" defaultValue={editingProject?.startDate || getLocalDate()} required />
+                                </div>
+                                <div className="minimal-field">
+                                    <label>Bitiş</label>
+                                    <input name="endDate" type="date" defaultValue={editingProject?.endDate || getLocalDate()} required />
+                                </div>
                             </div>
-                            <div className="input-group">
-                                <label htmlFor="project-end">Bitiş Tarihi *</label>
-                                <input
-                                    id="project-end"
-                                    name="endDate"
-                                    type="date"
-                                    className="input"
-                                    defaultValue={editingProject?.endDate}
-                                    required
-                                />
+
+                            <div className="minimal-field">
+                                <label>Projenin Durumu</label>
+                                <div className="status-toggles">
+                                    {['planning', 'in-progress', 'completed', 'on-hold'].map(status => (
+                                        <label key={status} className={`status-toggle ${status}`}>
+                                            <input type="radio" name="status" value={status} defaultChecked={(editingProject?.status || 'planning') === status} />
+                                            <span>
+                                                {status === 'planning' && '📋 Planlama'}
+                                                {status === 'in-progress' && '🔄 Devam Ediyor'}
+                                                {status === 'completed' && '✅ Tamamlandı'}
+                                                {status === 'on-hold' && '⏸️ Beklemede'}
+                                            </span>
+                                        </label>
+                                    ))}
+                                </div>
                             </div>
-                            <div className="input-group">
-                                <label htmlFor="project-status">Durum *</label>
-                                <select
-                                    id="project-status"
-                                    name="status"
-                                    className="select"
-                                    defaultValue={editingProject?.status || 'planning'}
-                                    required
-                                >
-                                    <option value="planning">Planlama</option>
-                                    <option value="in-progress">Devam Ediyor</option>
-                                    <option value="completed">Tamamlandı</option>
-                                    <option value="on-hold">Beklemede</option>
-                                </select>
+
+                            <div className="minimal-field">
+                                <label>İlerleme (%)</label>
+                                <input name="progress" type="range" min="0" max="100" defaultValue={editingProject?.progress || 0} onInput={(e) => {
+                                    const val = e.currentTarget.value;
+                                    const nextEl = e.currentTarget.nextElementSibling;
+                                    if(nextEl) nextEl.textContent = val + '%';
+                                }} />
+                                <span className="range-val">{editingProject?.progress || 0}%</span>
                             </div>
-                            <div className="input-group">
-                                <label htmlFor="project-progress">İlerleme (%) *</label>
-                                <input
-                                    id="project-progress"
-                                    name="progress"
-                                    type="number"
-                                    min="0"
-                                    max="100"
-                                    className="input"
-                                    defaultValue={editingProject?.progress || 0}
-                                    required
-                                />
+
+                            <div className="minimal-field">
+                                <textarea name="notes" placeholder="Ekstra notlar, hedefler..." defaultValue={editingProject?.notes}></textarea>
                             </div>
-                            <div className="input-group">
-                                <label htmlFor="project-notes">Notlar</label>
-                                <textarea
-                                    id="project-notes"
-                                    name="notes"
-                                    className="textarea"
-                                    defaultValue={editingProject?.notes}
-                                    placeholder="Proje hakkında notlar..."
-                                />
+
+                            <div className="minimal-actions">
+                                <button type="button" className="btn-cancel" onClick={() => setShowProjectModal(false)}>İptal</button>
+                                <button type="submit" className="btn-create">{editingProject ? 'Güncelle' : 'Projeyi Başlat 🚀'}</button>
                             </div>
-                            <button type="submit" className="btn btn-primary">
-                                {editingProject ? 'Güncelle' : 'Ekle'}
-                            </button>
                         </form>
                     </div>
                 </div>
