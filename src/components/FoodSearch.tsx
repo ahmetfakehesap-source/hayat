@@ -15,6 +15,7 @@ const FoodSearch: React.FC<FoodSearchProps> = ({ onSelect }) => {
     const [showResults, setShowResults] = useState(false);
     const [selectedFood, setSelectedFood] = useState<FoodItem | null>(null);
     const [selectedServing, setSelectedServing] = useState<Serving | null>(null);
+    const [quantity, setQuantity] = useState<number | string>(1);
     const containerRef = useRef<HTMLDivElement>(null);
 
     // Close on outside click
@@ -44,6 +45,7 @@ const FoodSearch: React.FC<FoodSearchProps> = ({ onSelect }) => {
         setQuery(value);
         setSelectedFood(null);
         setSelectedServing(null);
+        setQuantity(1);
         if (value.trim().length < 2) {
             setResults([]);
             return;
@@ -59,6 +61,7 @@ const FoodSearch: React.FC<FoodSearchProps> = ({ onSelect }) => {
         // Auto-select first serving (usually "100 Gram" or "Adet (Orta)")
         const defaultServing = food.servings[0] || { name: '100 Gram', gram: 100 };
         setSelectedServing(defaultServing);
+        setQuantity(1);
     };
 
     const handleServingChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -69,17 +72,36 @@ const FoodSearch: React.FC<FoodSearchProps> = ({ onSelect }) => {
 
     const handleConfirm = () => {
         if (!selectedFood || !selectedServing) return;
-        const macros = calcServingMacros(selectedFood, selectedServing);
+        const numQty = typeof quantity === 'string' ? parseFloat(quantity) || 1 : quantity;
+        const baseMacros = calcServingMacros(selectedFood, selectedServing);
+        const macros = {
+            calories: Math.round(baseMacros.calories * numQty),
+            protein: Math.round(baseMacros.protein * numQty * 10) / 10,
+            carbs: Math.round(baseMacros.carbs * numQty * 10) / 10,
+            fat: Math.round(baseMacros.fat * numQty * 10) / 10,
+            gram: Math.round(baseMacros.gram * numQty)
+        };
         addRecentFood(selectedFood); // Save to history
-        onSelect(selectedFood, selectedServing, macros);
+        onSelect(selectedFood, { ...selectedServing, name: numQty === 1 ? selectedServing.name : `${numQty}x ${selectedServing.name}` }, macros);
         // Reset
         setSelectedFood(null);
         setSelectedServing(null);
+        setQuantity(1);
         setQuery('');
     };
 
     const currentMacros = selectedFood && selectedServing
-        ? calcServingMacros(selectedFood, selectedServing)
+        ? (() => {
+            const numQty = typeof quantity === 'string' ? parseFloat(quantity) || 1 : quantity;
+            const base = calcServingMacros(selectedFood, selectedServing);
+            return {
+                calories: Math.round(base.calories * numQty),
+                protein: Math.round(base.protein * numQty * 10) / 10,
+                carbs: Math.round(base.carbs * numQty * 10) / 10,
+                fat: Math.round(base.fat * numQty * 10) / 10,
+                gram: Math.round(base.gram * numQty)
+            };
+        })()
         : null;
 
     const renderFoodItem = (food: FoodItem, i: number, prefix: string = '') => (
@@ -172,17 +194,39 @@ const FoodSearch: React.FC<FoodSearchProps> = ({ onSelect }) => {
                     </div>
 
                     <div className="food-serving-selector">
-                        <label>Porsiyon:</label>
-                        <select 
-                            value={selectedFood.servings.indexOf(selectedServing)}
-                            onChange={handleServingChange}
-                        >
-                            {selectedFood.servings.map((s, i) => (
-                                <option key={i} value={i}>
-                                    {s.name} ({s.gram}g)
-                                </option>
-                            ))}
-                        </select>
+                        <label>Miktar (x):</label>
+                        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.25rem' }}>
+                            <input 
+                                type="number" 
+                                min="0.1" 
+                                step="any" 
+                                value={quantity} 
+                                onChange={(e) => setQuantity(e.target.value)}
+                                onFocus={(e) => e.target.select()}
+                                style={{ 
+                                    width: '70px', 
+                                    padding: '0.5rem', 
+                                    borderRadius: 'var(--border-radius)', 
+                                    border: '1px solid var(--border-color)', 
+                                    background: 'var(--bg-primary)', 
+                                    color: 'var(--text-primary)',
+                                    fontSize: '0.9rem',
+                                    fontWeight: '600',
+                                    textAlign: 'center'
+                                }}
+                            />
+                            <select 
+                                value={selectedFood.servings.indexOf(selectedServing)}
+                                onChange={handleServingChange}
+                                style={{ flex: 1 }}
+                            >
+                                {selectedFood.servings.map((s, i) => (
+                                    <option key={i} value={i}>
+                                        {s.name} ({s.gram}g)
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
                     </div>
 
                     <div className="food-serving-macros">
