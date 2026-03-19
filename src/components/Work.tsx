@@ -161,6 +161,25 @@ const Work: React.FC = () => {
                 <p className="page-subtitle">Görevler, projeler ve kilometre taşlarını yönet</p>
             </div>
 
+            {/* Dashboard Widgets */}
+            <div className="work-dashboard">
+                <div className="dash-widget">
+                    <span className="dash-icon">🚀</span>
+                    <span className="dash-value">{data.projects.filter(p => p.status === 'in-progress').length}</span>
+                    <span className="dash-label">Aktif Projeler</span>
+                </div>
+                <div className="dash-widget">
+                    <span className="dash-icon">📌</span>
+                    <span className="dash-value">{activeTasks.length}</span>
+                    <span className="dash-label">Bekleyen Görevler</span>
+                </div>
+                <div className="dash-widget">
+                    <span className="dash-icon">✅</span>
+                    <span className="dash-value">{completedTasks.length}</span>
+                    <span className="dash-label">Tamamlanan Görevler</span>
+                </div>
+            </div>
+
             {/* Tabs */}
             <div className="tabs">
                 <button
@@ -207,50 +226,53 @@ const Work: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Active Tasks */}
-                    <div className="tasks-section">
-                        <h3 className="subsection-title">Aktif Görevler ({activeTasks.length})</h3>
-                        <div className="tasks-list">
-                            {activeTasks.length === 0 ? (
-                                <div className="empty-state">
-                                    <p>🎉 Tüm görevler tamamlandı!</p>
-                                </div>
-                            ) : (
-                                activeTasks.map((task) => (
-                                    <div key={task.id} className="task-item card">
-                                        <div className="task-content">
-                                            <input
-                                                type="checkbox"
-                                                checked={task.completed}
-                                                onChange={() => handleToggleTask(task.id)}
-                                                className="task-checkbox"
-                                            />
-                                            <div className="task-info">
-                                                <span className="task-title">{task.title}</span>
-                                                {task.category && (
-                                                    <span className="task-category">{task.category}</span>
-                                                )}
-                                            </div>
-                                        </div>
-                                        <button
-                                            className="btn-icon delete"
-                                            onClick={() => handleDeleteTask(task.id)}
-                                            title="Sil"
-                                        >
-                                            🗑️
-                                        </button>
+                    {/* Kanban Board */}
+                    <div className="kanban-board">
+                        {/* To Do Column */}
+                        <div className="kanban-column">
+                            <div className="kanban-header">
+                                <span className="kanban-title">📌 Yapılacaklar <span className="kanban-count">{activeTasks.length}</span></span>
+                            </div>
+                            <div className="tasks-list">
+                                {activeTasks.length === 0 ? (
+                                    <div className="empty-state" style={{padding: '1rem', fontSize: '1rem'}}>
+                                        <p>🎉 Tüm görevler tamamlandı!</p>
                                     </div>
-                                ))
-                            )}
+                                ) : (
+                                    activeTasks.map((task) => (
+                                        <div key={task.id} className="task-item card">
+                                            <div className="task-content">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={task.completed}
+                                                    onChange={() => handleToggleTask(task.id)}
+                                                    className="task-checkbox"
+                                                />
+                                                <div className="task-info">
+                                                    <span className="task-title">{task.title}</span>
+                                                    {task.category && (
+                                                        <span className="task-category">{task.category}</span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <button
+                                                className="btn-icon delete"
+                                                onClick={() => handleDeleteTask(task.id)}
+                                                title="Sil"
+                                            >
+                                                🗑️
+                                            </button>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
                         </div>
-                    </div>
 
-                    {/* Completed Tasks */}
-                    {completedTasks.length > 0 && (
-                        <div className="tasks-section">
-                            <h3 className="subsection-title">
-                                Tamamlanan Görevler ({completedTasks.length})
-                            </h3>
+                        {/* Done Column */}
+                        <div className="kanban-column">
+                            <div className="kanban-header">
+                                <span className="kanban-title">✅ Tamamlananlar <span className="kanban-count">{completedTasks.length}</span></span>
+                            </div>
                             <div className="tasks-list">
                                 {completedTasks.map((task) => (
                                     <div key={task.id} className="task-item card completed">
@@ -279,7 +301,7 @@ const Work: React.FC = () => {
                                 ))}
                             </div>
                         </div>
-                    )}
+                    </div>
                 </div>
             )}
 
@@ -305,8 +327,10 @@ const Work: React.FC = () => {
                                 <p>📁 Henüz proje eklenmemiş</p>
                             </div>
                         ) : (
-                            data.projects.map((project) => (
-                                <div key={project.id} className="project-card card">
+                            data.projects.map((project) => {
+                                const diffDays = Math.ceil((new Date(project.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+                                return (
+                                <div key={project.id} className={`project-card card status-${project.status}`}>
                                     <div className="project-header">
                                         <h3 className="project-name">{project.name}</h3>
                                         <span className={`project-status ${project.status}`}>
@@ -321,6 +345,11 @@ const Work: React.FC = () => {
                                         <span>📅 {new Date(project.startDate).toLocaleDateString('tr-TR')}</span>
                                         <span>→</span>
                                         <span>🏁 {new Date(project.endDate).toLocaleDateString('tr-TR')}</span>
+                                        {project.status !== 'completed' && (
+                                            <span className={`days-remaining ${diffDays > 7 ? 'plenty' : ''}`}>
+                                                {diffDays < 0 ? 'Süresi Doldu' : `⏳ ${diffDays} Gün Kaldı`}
+                                            </span>
+                                        )}
                                     </div>
 
                                     <div className="project-progress">
@@ -387,7 +416,8 @@ const Work: React.FC = () => {
                                         </button>
                                     </div>
                                 </div>
-                            ))
+                                );
+                            })
                         )}
                     </div>
                 </div>
