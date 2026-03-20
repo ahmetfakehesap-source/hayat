@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { generateId, getLocalDate, dateToLocalString } from '../utils/storage';
+import { generateId, getLocalDate } from '../utils/storage';
 import type { Task, Project, Milestone } from '../types';
 import './Work.css';
 
@@ -75,45 +75,8 @@ const Work: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'tasks' | 'projects'>('tasks');
     const [taskTitle, setTaskTitle] = useState('');
     const [taskCategory, setTaskCategory] = useState('');
-    // Initialize with Business Development routines if empty
-    useEffect(() => {
-        if (data.projects.length === 0 && data.tasks.length === 0) {
-            const bizProject: Project = {
-                id: generateId(),
-                name: 'Robux Satış Operasyonu (Faz 1)',
-                startDate: getLocalDate(),
-                endDate: dateToLocalString(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)), // +30 days
-                status: 'in-progress',
-                progress: 0,
-                notes: 'Ramazan dönemi strateji geliştirme ve mevcut operasyonu koruma.',
-                milestones: [
-                    { id: generateId(), title: 'Rakip Fiyat Analizi (1. Hafta)', completed: false },
-                    { id: generateId(), title: 'Yeni Satış Platformları Araştırması (2. Hafta)', completed: false },
-                    { id: generateId(), title: 'Tedarik Zinciri Maliyet Analizi (3. Hafta)', completed: false },
-                ]
-            };
 
-            const strategyTask: Task = {
-                id: generateId(),
-                title: 'Strateji Masası - Haftalık Seans 1',
-                completed: false,
-                createdAt: new Date().toISOString(),
-                category: 'İş Geliştirme'
-            };
-            const strategyTask2: Task = {
-                id: generateId(),
-                title: 'Strateji Masası - Haftalık Seans 2',
-                completed: false,
-                createdAt: new Date().toISOString(),
-                category: 'İş Geliştirme'
-            };
 
-            updateData({
-                projects: [bizProject],
-                tasks: [strategyTask, strategyTask2]
-            });
-        }
-    }, []);
 
     // Task handlers
     const handleAddTaskInline = () => {
