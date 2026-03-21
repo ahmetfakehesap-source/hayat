@@ -9,6 +9,7 @@ import Journal from './components/Journal';
 import InvestmentPage from './components/Investment';
 import SchedulePage from './components/Schedule';
 import GoalsPage from './components/Goals';
+import Habits from './components/Habits';
 import LoginGate from './components/LoginGate';
 import './index.css';
 
@@ -36,6 +37,8 @@ const App: React.FC = () => {
         return <SchedulePage />;
       case 'goals':
         return <GoalsPage />;
+      case 'habits':
+        return <Habits />;
       default:
         return <Dashboard />;
     }

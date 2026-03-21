@@ -36,6 +36,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentPage, onNavigate }) =>
         { id: 'journal', label: 'Günlüğüm', icon: '📔' },
         { id: 'investment', label: 'Yatırım', icon: '💰' },
         { id: 'schedule', label: 'Program', icon: '📅' },
+        { id: 'habits', label: 'Alışkanlıklar', icon: '🔄' },
     ];
 
     const allMenuItems = [
@@ -47,6 +48,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentPage, onNavigate }) =>
         { id: 'investment', label: 'Yatırım', icon: '💰' },
         { id: 'schedule', label: 'Haftalık Program', icon: '📅' },
         { id: 'goals', label: 'Hedeflerim', icon: '🎯' },
+        { id: 'habits', label: 'Alışkanlıklar', icon: '🔄' },
     ];
 
     const toggleTheme = () => {

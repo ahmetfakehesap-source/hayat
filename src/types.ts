@@ -134,6 +134,19 @@ export interface Goal {
     notes?: string;
 }
 
+export interface Habit {
+    id: string;
+    name: string;
+    type: 'good' | 'bad';
+    createdAt: string;
+}
+
+export interface HabitLog {
+    id: string;
+    habitId: string;
+    date: string;
+    completed: boolean;
+}
 
 
 export interface Settings {
@@ -173,6 +186,8 @@ export interface AppData {
     investments: Investment[];
     schedule: ScheduleEntry[];
     goals: Goal[];
+    habits: Habit[];
+    habitLogs: HabitLog[];
     settings: Settings;
     customFoods?: FoodItem[];
     recentFoodEntries?: RecentFoodEntry[];

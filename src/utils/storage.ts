@@ -28,6 +28,8 @@ const defaultData: AppData = {
     investments: [],
     schedule: [],
     goals: [],
+    habits: [],
+    habitLogs: [],
     settings: defaultSettings,
     customFoods: [],
     recentFoodEntries: [],
