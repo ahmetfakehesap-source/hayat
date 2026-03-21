@@ -104,7 +104,19 @@ export const storage = {
             const settings = localStorage.getItem(SETTINGS_KEY);
             if (settings) {
                 const parsed = JSON.parse(settings);
-                return { ...defaultSettings, ...parsed };
+                
+                // Apply forced migration for existing users to update goals
+                const migratedSettings = { ...defaultSettings, ...parsed };
+                
+                // If the user's data does not match the new default goals and they haven't been updated
+                // we'll force the new yearlyBookGoal since there wasn't a UI for it initially
+                // To avoid being stuck on 50 forever:
+                if (parsed.yearlyBookGoal === 50) {
+                    migratedSettings.yearlyBookGoal = 9;
+                    localStorage.setItem(SETTINGS_KEY, JSON.stringify(migratedSettings));
+                }
+
+                return migratedSettings;
             }
             return defaultSettings;
         } catch (error) {
