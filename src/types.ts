@@ -94,6 +94,7 @@ export interface Book {
     totalPages?: number;
     rating?: number;
     review?: string;
+    notes?: string; // Reading notes
     startDate?: string;
     finishDate?: string;
 }

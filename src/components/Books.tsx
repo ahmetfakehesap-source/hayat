@@ -10,12 +10,26 @@ const Books: React.FC = () => {
     const [showEditModal, setShowEditModal] = useState(false);
     const [activeTab, setActiveTab] = useState<'reading' | 'completed' | 'want-to-read'>('reading');
     const [showAddForm, setShowAddForm] = useState(false);
+    const [editNotesId, setEditNotesId] = useState<string | null>(null);
+    const [noteText, setNoteText] = useState('');
 
     // Add form state
     const [bookTitle, setBookTitle] = useState('');
     const [bookAuthor, setBookAuthor] = useState('');
     const [bookStatus, setBookStatus] = useState<Book['status']>('want-to-read');
     const [bookPages, setBookPages] = useState('');
+
+    // Edit form state
+    const [editTitle, setEditTitle] = useState('');
+    const [editAuthor, setEditAuthor] = useState('');
+    const [editStatus, setEditStatus] = useState<Book['status']>('reading');
+    const [editTotalPages, setEditTotalPages] = useState('');
+    const [editCurrentPage, setEditCurrentPage] = useState('');
+    const [editStartDate, setEditStartDate] = useState('');
+    const [editFinishDate, setEditFinishDate] = useState('');
+    const [editRating, setEditRating] = useState('');
+    const [editReview, setEditReview] = useState('');
+    const [editNotes, setEditNotes] = useState('');
 
     const handleAddBook = (e?: React.FormEvent) => {
         e?.preventDefault();
@@ -42,54 +56,58 @@ const Books: React.FC = () => {
     const handleUpdatePage = (bookId: string, page: number) => {
         const book = data.books.find((b) => b.id === bookId);
         if (!book) return;
-
         const maxPage = book.totalPages || 9999;
         const clampedPage = Math.max(0, Math.min(page, maxPage));
 
-        // Auto-complete if reached total pages
         if (book.totalPages && clampedPage >= book.totalPages) {
             updateData({
                 books: data.books.map((b) => b.id === bookId ? {
-                    ...b,
-                    currentPage: book.totalPages,
-                    status: 'completed' as const,
-                    finishDate: getLocalDate()
+                    ...b, currentPage: book.totalPages, status: 'completed' as const, finishDate: getLocalDate()
                 } : b)
             });
         } else {
-            updateData({
-                books: data.books.map((b) => b.id === bookId ? { ...b, currentPage: clampedPage } : b)
-            });
+            updateData({ books: data.books.map((b) => b.id === bookId ? { ...b, currentPage: clampedPage } : b) });
         }
     };
 
     const handleStartReading = (bookId: string) => {
         updateData({
             books: data.books.map((b) => b.id === bookId ? {
-                ...b,
-                status: 'reading' as const,
-                startDate: getLocalDate(),
-                currentPage: 0
+                ...b, status: 'reading' as const, startDate: getLocalDate(), currentPage: 0
             } : b)
         });
     };
 
-    const handleEditBook = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
+    const openEditModal = (book: Book) => {
+        setEditingBook(book);
+        setEditTitle(book.title);
+        setEditAuthor(book.author);
+        setEditStatus(book.status);
+        setEditTotalPages(book.totalPages?.toString() || '');
+        setEditCurrentPage(book.currentPage?.toString() || '');
+        setEditStartDate(book.startDate || '');
+        setEditFinishDate(book.finishDate || '');
+        setEditRating(book.rating?.toString() || '');
+        setEditReview(book.review || '');
+        setEditNotes(book.notes || '');
+        setShowEditModal(true);
+    };
+
+    const handleSaveEdit = () => {
         if (!editingBook) return;
-        const formData = new FormData(e.currentTarget);
 
         const updatedBook: Book = {
             ...editingBook,
-            title: formData.get('title') as string,
-            author: formData.get('author') as string,
-            status: formData.get('status') as Book['status'],
-            totalPages: Number(formData.get('totalPages')) || undefined,
-            currentPage: formData.get('status') === 'reading' ? Number(formData.get('currentPage')) || 0 : undefined,
-            rating: formData.get('status') === 'completed' ? Number(formData.get('rating')) || undefined : undefined,
-            review: formData.get('review') as string || undefined,
-            startDate: formData.get('startDate') as string || undefined,
-            finishDate: formData.get('status') === 'completed' ? formData.get('finishDate') as string || undefined : undefined,
+            title: editTitle,
+            author: editAuthor,
+            status: editStatus,
+            totalPages: editTotalPages ? Number(editTotalPages) : undefined,
+            currentPage: editStatus === 'reading' ? (Number(editCurrentPage) || 0) : undefined,
+            rating: editStatus === 'completed' && editRating ? Number(editRating) : undefined,
+            review: editReview || undefined,
+            notes: editNotes || undefined,
+            startDate: editStartDate || undefined,
+            finishDate: editStatus === 'completed' ? editFinishDate || undefined : undefined,
         };
 
         updateData({ books: data.books.map((b) => (b.id === editingBook.id ? updatedBook : b)) });
@@ -103,6 +121,19 @@ const Books: React.FC = () => {
         }
     };
 
+    const handleSaveNote = (bookId: string) => {
+        updateData({
+            books: data.books.map((b) => b.id === bookId ? { ...b, notes: noteText || undefined } : b)
+        });
+        setEditNotesId(null);
+        setNoteText('');
+    };
+
+    const openNotes = (book: Book) => {
+        setEditNotesId(book.id);
+        setNoteText(book.notes || '');
+    };
+
     const stats = useMemo(() => {
         const completed = data.books.filter((b) => b.status === 'completed');
         const currentYear = new Date().getFullYear();
@@ -110,8 +141,6 @@ const Books: React.FC = () => {
             if (!b.finishDate) return false;
             return new Date(b.finishDate).getFullYear() === currentYear;
         });
-
-        // Total pages read
         const totalPagesRead = data.books.reduce((sum, b) => {
             if (b.status === 'completed' && b.totalPages) return sum + b.totalPages;
             if (b.status === 'reading' && b.currentPage) return sum + b.currentPage;
@@ -125,7 +154,6 @@ const Books: React.FC = () => {
             wantToRead: data.books.filter((b) => b.status === 'want-to-read').length,
             yearlyGoal: settings.yearlyBookGoal,
             totalPagesRead,
-            total: data.books.length,
         };
     }, [data.books, settings.yearlyBookGoal]);
 
@@ -134,12 +162,15 @@ const Books: React.FC = () => {
         (b.finishDate || '').localeCompare(a.finishDate || '')
     );
     const wantToReadBooks = data.books.filter((b) => b.status === 'want-to-read');
-
     const yearProgress = stats.yearlyGoal > 0 ? Math.min((stats.completedThisYear / stats.yearlyGoal) * 100, 100) : 0;
 
-    const renderStars = (rating: number) => {
+    const renderStars = (rating: number, interactive?: boolean, onChange?: (r: number) => void) => {
         return Array.from({ length: 5 }, (_, i) => (
-            <span key={i} className={`star ${i < rating ? 'filled' : ''}`}>★</span>
+            <span
+                key={i}
+                className={`star ${i < rating ? 'filled' : ''} ${interactive ? 'interactive' : ''}`}
+                onClick={() => interactive && onChange && onChange(i + 1)}
+            >★</span>
         ));
     };
 
@@ -184,7 +215,7 @@ const Books: React.FC = () => {
                 </div>
             </div>
 
-            {/* Add Book Button & Form */}
+            {/* Add Book */}
             {!showAddForm ? (
                 <button className="books-add-trigger" onClick={() => setShowAddForm(true)}>
                     <span>＋</span> Yeni Kitap Ekle
@@ -192,39 +223,18 @@ const Books: React.FC = () => {
             ) : (
                 <form className="books-add-form" onSubmit={handleAddBook}>
                     <div className="baf-row">
-                        <input
-                            type="text"
-                            placeholder="Kitap adı..."
-                            value={bookTitle}
-                            onChange={(e) => setBookTitle(e.target.value)}
-                            autoFocus
-                        />
-                        <input
-                            type="text"
-                            placeholder="Yazar..."
-                            value={bookAuthor}
-                            onChange={(e) => setBookAuthor(e.target.value)}
-                        />
+                        <input type="text" placeholder="Kitap adı..." value={bookTitle} onChange={(e) => setBookTitle(e.target.value)} autoFocus />
+                        <input type="text" placeholder="Yazar..." value={bookAuthor} onChange={(e) => setBookAuthor(e.target.value)} />
                     </div>
                     <div className="baf-row">
-                        <input
-                            type="number"
-                            placeholder="Sayfa sayısı"
-                            value={bookPages}
-                            onChange={(e) => setBookPages(e.target.value)}
-                            className="baf-small"
-                        />
+                        <input type="number" placeholder="Sayfa sayısı" value={bookPages} onChange={(e) => setBookPages(e.target.value)} className="baf-small" />
                         <select value={bookStatus} onChange={(e) => setBookStatus(e.target.value as Book['status'])}>
                             <option value="want-to-read">📋 Okunacak</option>
                             <option value="reading">📖 Okunuyor</option>
                             <option value="completed">✅ Tamamlandı</option>
                         </select>
-                        <button type="submit" className="baf-submit" disabled={!bookTitle.trim() || !bookAuthor.trim()}>
-                            Ekle
-                        </button>
-                        <button type="button" className="baf-cancel" onClick={() => setShowAddForm(false)}>
-                            ×
-                        </button>
+                        <button type="submit" className="baf-submit" disabled={!bookTitle.trim() || !bookAuthor.trim()}>Ekle</button>
+                        <button type="button" className="baf-cancel" onClick={() => setShowAddForm(false)}>×</button>
                     </div>
                 </form>
             )}
@@ -255,6 +265,7 @@ const Books: React.FC = () => {
                         <div className="reading-list">
                             {readingBooks.map((book) => {
                                 const progress = book.totalPages ? Math.round(((book.currentPage || 0) / book.totalPages) * 100) : 0;
+                                const isNotesOpen = editNotesId === book.id;
                                 return (
                                     <div key={book.id} className="reading-card">
                                         <div className="rc-top">
@@ -263,7 +274,8 @@ const Books: React.FC = () => {
                                                 <span className="rc-author">{book.author}</span>
                                             </div>
                                             <div className="rc-actions">
-                                                <button className="rc-edit" onClick={() => { setEditingBook(book); setShowEditModal(true); }} title="Düzenle">✏️</button>
+                                                <button className="rc-note-btn" onClick={() => isNotesOpen ? setEditNotesId(null) : openNotes(book)} title="Notlar">📝</button>
+                                                <button className="rc-edit" onClick={() => openEditModal(book)} title="Düzenle">✏️</button>
                                                 <button className="rc-del" onClick={() => handleDeleteBook(book.id)} title="Sil">×</button>
                                             </div>
                                         </div>
@@ -284,6 +296,32 @@ const Books: React.FC = () => {
                                                     <button onClick={() => handleUpdatePage(book.id, (book.currentPage || 0) + 1)}>+1</button>
                                                     <button onClick={() => handleUpdatePage(book.id, (book.currentPage || 0) + 10)}>+10</button>
                                                 </div>
+                                            </div>
+                                        )}
+
+                                        {/* Inline Notes */}
+                                        {isNotesOpen && (
+                                            <div className="rc-notes-section">
+                                                <textarea
+                                                    className="rc-notes-textarea"
+                                                    placeholder="Bu kitap hakkında notlarını yaz... Önemli fikirler, alıntılar, düşünceler..."
+                                                    value={noteText}
+                                                    onChange={(e) => setNoteText(e.target.value)}
+                                                    rows={4}
+                                                    autoFocus
+                                                />
+                                                <div className="rc-notes-actions">
+                                                    <button className="rc-notes-save" onClick={() => handleSaveNote(book.id)}>💾 Kaydet</button>
+                                                    <button className="rc-notes-cancel" onClick={() => setEditNotesId(null)}>İptal</button>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Show existing notes (collapsed) */}
+                                        {!isNotesOpen && book.notes && (
+                                            <div className="rc-notes-preview" onClick={() => openNotes(book)}>
+                                                <span className="notes-icon">📝</span>
+                                                <p>{book.notes}</p>
                                             </div>
                                         )}
 
@@ -316,21 +354,13 @@ const Books: React.FC = () => {
                                             <span className="cc-author">{book.author}</span>
                                         </div>
                                         <div className="cc-actions">
-                                            <button onClick={() => { setEditingBook(book); setShowEditModal(true); }}>✏️</button>
+                                            <button onClick={() => openEditModal(book)}>✏️</button>
                                             <button onClick={() => handleDeleteBook(book.id)}>×</button>
                                         </div>
                                     </div>
-
-                                    {book.rating && (
-                                        <div className="cc-rating">{renderStars(book.rating)}</div>
-                                    )}
-
-                                    {book.review && (
-                                        <div className="cc-review">
-                                            <p>"{book.review}"</p>
-                                        </div>
-                                    )}
-
+                                    {book.rating && <div className="cc-rating">{renderStars(book.rating)}</div>}
+                                    {book.review && <div className="cc-review"><p>"{book.review}"</p></div>}
+                                    {book.notes && <div className="cc-notes"><span>📝</span><p>{book.notes}</p></div>}
                                     <div className="cc-footer">
                                         {book.finishDate && <span>📅 {formatDate(book.finishDate)}</span>}
                                         {book.totalPages && <span>📄 {book.totalPages} sayfa</span>}
@@ -360,10 +390,8 @@ const Books: React.FC = () => {
                                         {book.totalPages && <span className="wc-pages">{book.totalPages} sayfa</span>}
                                     </div>
                                     <div className="wc-actions">
-                                        <button className="wc-start" onClick={() => handleStartReading(book.id)} title="Okumaya Başla">
-                                            📖 Başla
-                                        </button>
-                                        <button className="wc-edit" onClick={() => { setEditingBook(book); setShowEditModal(true); }}>✏️</button>
+                                        <button className="wc-start" onClick={() => handleStartReading(book.id)}>📖 Başla</button>
+                                        <button className="wc-edit" onClick={() => openEditModal(book)}>✏️</button>
                                         <button className="wc-del" onClick={() => handleDeleteBook(book.id)}>×</button>
                                     </div>
                                 </div>
@@ -373,64 +401,99 @@ const Books: React.FC = () => {
                 </div>
             )}
 
-            {/* Edit Modal */}
+            {/* ===== Redesigned Edit Panel ===== */}
             {showEditModal && editingBook && (
-                <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
-                    <div className="modal" onClick={(e) => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h2 className="modal-title">Kitap Düzenle</h2>
-                            <button className="modal-close" onClick={() => setShowEditModal(false)}>×</button>
+                <div className="edit-overlay" onClick={() => setShowEditModal(false)}>
+                    <div className="edit-panel" onClick={(e) => e.stopPropagation()}>
+                        <div className="ep-header">
+                            <h2>Kitap Düzenle</h2>
+                            <button className="ep-close" onClick={() => setShowEditModal(false)}>×</button>
                         </div>
-                        <form onSubmit={handleEditBook}>
-                            <div className="input-group">
-                                <label>Kitap Adı *</label>
-                                <input name="title" type="text" className="input" defaultValue={editingBook.title} required />
+
+                        <div className="ep-body">
+                            {/* Title & Author */}
+                            <div className="ep-group">
+                                <label>Kitap Adı</label>
+                                <input type="text" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} />
                             </div>
-                            <div className="input-group">
-                                <label>Yazar *</label>
-                                <input name="author" type="text" className="input" defaultValue={editingBook.author} required />
+                            <div className="ep-group">
+                                <label>Yazar</label>
+                                <input type="text" value={editAuthor} onChange={(e) => setEditAuthor(e.target.value)} />
                             </div>
-                            <div className="input-group">
-                                <label>Durum *</label>
-                                <select name="status" className="select" defaultValue={editingBook.status} required>
-                                    <option value="reading">Okunuyor</option>
-                                    <option value="completed">Tamamlandı</option>
-                                    <option value="want-to-read">Okunacak</option>
-                                </select>
+
+                            {/* Status */}
+                            <div className="ep-group">
+                                <label>Durum</label>
+                                <div className="ep-status-pills">
+                                    {(['want-to-read', 'reading', 'completed'] as const).map((s) => (
+                                        <button
+                                            key={s}
+                                            className={`ep-pill ${editStatus === s ? 'active' : ''} ${s}`}
+                                            onClick={() => setEditStatus(s)}
+                                        >
+                                            {s === 'want-to-read' ? '📋 Okunacak' : s === 'reading' ? '📖 Okunuyor' : '✅ Tamamlandı'}
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
-                            <div className="input-group">
-                                <label>Toplam Sayfa</label>
-                                <input name="totalPages" type="number" className="input" defaultValue={editingBook.totalPages} />
+
+                            {/* Pages */}
+                            <div className="ep-row">
+                                <div className="ep-group half">
+                                    <label>Toplam Sayfa</label>
+                                    <input type="number" value={editTotalPages} onChange={(e) => setEditTotalPages(e.target.value)} placeholder="0" />
+                                </div>
+                                {editStatus === 'reading' && (
+                                    <div className="ep-group half">
+                                        <label>Şu Anki Sayfa</label>
+                                        <input type="number" value={editCurrentPage} onChange={(e) => setEditCurrentPage(e.target.value)} placeholder="0" />
+                                    </div>
+                                )}
                             </div>
-                            <div className="input-group">
-                                <label>Şu Anki Sayfa</label>
-                                <input name="currentPage" type="number" className="input" defaultValue={editingBook.currentPage} />
+
+                            {/* Dates */}
+                            <div className="ep-row">
+                                <div className="ep-group half">
+                                    <label>Başlangıç</label>
+                                    <input type="date" value={editStartDate} onChange={(e) => setEditStartDate(e.target.value)} />
+                                </div>
+                                {editStatus === 'completed' && (
+                                    <div className="ep-group half">
+                                        <label>Bitiş</label>
+                                        <input type="date" value={editFinishDate} onChange={(e) => setEditFinishDate(e.target.value)} />
+                                    </div>
+                                )}
                             </div>
-                            <div className="input-group">
-                                <label>Başlangıç Tarihi</label>
-                                <input name="startDate" type="date" className="input" defaultValue={editingBook.startDate} />
+
+                            {/* Rating (only for completed) */}
+                            {editStatus === 'completed' && (
+                                <div className="ep-group">
+                                    <label>Puan</label>
+                                    <div className="ep-stars">
+                                        {renderStars(Number(editRating) || 0, true, (r) => setEditRating(r.toString()))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Review */}
+                            {editStatus === 'completed' && (
+                                <div className="ep-group">
+                                    <label>Yorum</label>
+                                    <textarea value={editReview} onChange={(e) => setEditReview(e.target.value)} placeholder="Bu kitap hakkında yorumun..." rows={3} />
+                                </div>
+                            )}
+
+                            {/* Notes */}
+                            <div className="ep-group">
+                                <label>📝 Notlar</label>
+                                <textarea value={editNotes} onChange={(e) => setEditNotes(e.target.value)} placeholder="Alıntılar, fikirler, önemli noktalar..." rows={4} />
                             </div>
-                            <div className="input-group">
-                                <label>Bitiş Tarihi</label>
-                                <input name="finishDate" type="date" className="input" defaultValue={editingBook.finishDate} />
-                            </div>
-                            <div className="input-group">
-                                <label>Puan (1-5)</label>
-                                <select name="rating" className="select" defaultValue={editingBook.rating}>
-                                    <option value="">Seçiniz</option>
-                                    <option value="1">⭐ 1</option>
-                                    <option value="2">⭐⭐ 2</option>
-                                    <option value="3">⭐⭐⭐ 3</option>
-                                    <option value="4">⭐⭐⭐⭐ 4</option>
-                                    <option value="5">⭐⭐⭐⭐⭐ 5</option>
-                                </select>
-                            </div>
-                            <div className="input-group">
-                                <label>Yorum</label>
-                                <textarea name="review" className="textarea" defaultValue={editingBook.review}></textarea>
-                            </div>
-                            <button type="submit" className="btn btn-primary">Güncelle</button>
-                        </form>
+                        </div>
+
+                        <div className="ep-footer">
+                            <button className="ep-save" onClick={handleSaveEdit}>💾 Kaydet</button>
+                            <button className="ep-cancel" onClick={() => setShowEditModal(false)}>İptal</button>
+                        </div>
                     </div>
                 </div>
             )}
