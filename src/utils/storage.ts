@@ -9,7 +9,7 @@ const defaultSettings: Settings = {
     dailyProteinGoal: 120, // Increased protein focus
     dailyCarbsGoal: 150,
     dailyFatGoal: 50,
-    yearlyBookGoal: 50, // Approx 1 book/week or based on 10 pages/day
+    yearlyBookGoal: 9, // Approx 1 book/month or as per user request
     weeklyWorkoutGoal: 2, // 2 days/week walking
     workoutDays: [], // Flexible
     monthlyWorkoutGoal: 8,
@@ -35,7 +35,7 @@ const defaultData: AppData = {
     recentFoodEntries: [],
 };
 
-const DATA_VERSION = 2; // Increment this when default settings change
+const DATA_VERSION = 3; // Increment this when default settings change
 
 export const storage = {
 
