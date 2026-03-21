@@ -1,11 +1,18 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { generateId, formatDate, getLocalDate } from '../utils/storage';
 import type { Book } from '../types';
 import './Books.css';
 
 const Books: React.FC = () => {
-    const { data, updateData, settings } = useApp();
+    const { data, updateData, settings, updateSettings } = useApp();
+
+    useEffect(() => {
+        if (settings.yearlyBookGoal === 50) {
+            updateSettings({ yearlyBookGoal: 9 });
+        }
+    }, [settings.yearlyBookGoal, updateSettings]);
+
     const [editingBook, setEditingBook] = useState<Book | null>(null);
     const [showEditModal, setShowEditModal] = useState(false);
     const [activeTab, setActiveTab] = useState<'reading' | 'completed' | 'want-to-read'>('reading');
