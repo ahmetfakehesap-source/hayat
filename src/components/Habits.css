@@ -2,10 +2,47 @@
     animation: fadeIn 0.3s ease;
 }
 
+/* Identity Card */
+.identity-card {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.06), rgba(139, 92, 246, 0.06));
+    border: 1px solid rgba(99, 102, 241, 0.15);
+    border-radius: 16px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.identity-quote {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.identity-icon {
+    font-size: 1.75rem;
+    flex-shrink: 0;
+}
+
+.identity-text strong {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary);
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.identity-text p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    line-height: 1.5;
+    font-style: italic;
+}
+
 /* Dashboard */
 .habits-dashboard {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
     gap: 1rem;
     margin-bottom: 2rem;
 }
@@ -28,6 +65,43 @@
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
 }
 
+/* Circular Progress Ring */
+.stat-ring {
+    position: relative;
+    width: 64px;
+    height: 64px;
+}
+
+.stat-circle {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+}
+
+.stat-circle-bg {
+    fill: none;
+    stroke: var(--border-color);
+    stroke-width: 3;
+}
+
+.stat-circle-fill {
+    fill: none;
+    stroke: var(--color-primary);
+    stroke-width: 3;
+    stroke-linecap: round;
+    transition: stroke-dasharray 0.6s ease;
+}
+
+.ring-value {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: var(--text-primary);
+}
+
 .stat-icon {
     font-size: 1.5rem;
 }
@@ -40,11 +114,12 @@
 }
 
 .stat-label {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     color: var(--text-secondary);
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    text-align: center;
 }
 
 /* Tabs */
@@ -124,6 +199,21 @@
     color: var(--text-tertiary);
 }
 
+.habit-advanced-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 0.25rem;
+    margin-right: 0.5rem;
+    opacity: 0.5;
+    transition: opacity 0.2s;
+}
+
+.habit-advanced-toggle:hover {
+    opacity: 1;
+}
+
 .habit-add-btn {
     background: var(--bg-secondary);
     border: 1px solid var(--border-color);
@@ -143,6 +233,45 @@
     border-color: var(--color-primary);
 }
 
+/* Advanced Fields (Trigger & Reward) */
+.habit-advanced-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+    padding: 0 0.5rem;
+    animation: fadeIn 0.2s ease;
+}
+
+.advanced-field {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 0.5rem 0.75rem;
+}
+
+.adv-icon {
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+
+.advanced-field input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    outline: none;
+}
+
+.advanced-field input::placeholder {
+    color: var(--text-tertiary);
+    font-size: 0.8rem;
+}
+
 /* Habits List */
 .habits-list {
     display: flex;
@@ -156,9 +285,14 @@
     color: var(--text-secondary);
 }
 
+.empty-icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.75rem;
+}
+
 .habits-empty p {
     font-size: 1.1rem;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.25rem;
 }
 
 .habits-empty span {
@@ -206,7 +340,6 @@
     user-select: none;
 }
 
-/* Custom Checkbox */
 .habit-checkbox {
     width: 24px;
     height: 24px;
@@ -219,23 +352,10 @@
     flex-shrink: 0;
 }
 
-.habit-checkbox.good {
-    border-color: rgba(16, 185, 129, 0.4);
-}
-
-.habit-checkbox.bad {
-    border-color: rgba(239, 68, 68, 0.4);
-}
-
-.habit-checkbox.good.checked {
-    background: var(--color-success);
-    border-color: var(--color-success);
-}
-
-.habit-checkbox.bad.checked {
-    background: var(--color-danger);
-    border-color: var(--color-danger);
-}
+.habit-checkbox.good { border-color: rgba(16, 185, 129, 0.4); }
+.habit-checkbox.bad { border-color: rgba(239, 68, 68, 0.4); }
+.habit-checkbox.good.checked { background: var(--color-success); border-color: var(--color-success); }
+.habit-checkbox.bad.checked { background: var(--color-danger); border-color: var(--color-danger); }
 
 .check-mark {
     color: white;
@@ -246,7 +366,7 @@
 .habit-info {
     display: flex;
     flex-direction: column;
-    gap: 0.2rem;
+    gap: 0.15rem;
 }
 
 .habit-name {
@@ -261,16 +381,47 @@
     color: var(--text-tertiary);
 }
 
-.habit-streak {
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: #f59e0b;
-    display: inline-flex;
+.habit-meta {
+    display: flex;
+    gap: 0.75rem;
     align-items: center;
-    gap: 0.2rem;
 }
 
-/* Delete Button */
+.habit-streak {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #f59e0b;
+}
+
+.habit-rate {
+    font-size: 0.7rem;
+    color: var(--text-tertiary);
+    font-weight: 500;
+}
+
+/* Action Buttons */
+.habit-actions-right {
+    display: flex;
+    gap: 0.25rem;
+    align-items: center;
+}
+
+.habit-expand-btn {
+    background: none;
+    border: none;
+    color: var(--text-tertiary);
+    font-size: 0.7rem;
+    cursor: pointer;
+    padding: 0.25rem 0.4rem;
+    border-radius: 4px;
+    transition: all 0.15s ease;
+}
+
+.habit-expand-btn:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
 .habit-delete-btn {
     background: none;
     border: none;
@@ -336,10 +487,128 @@
 }
 
 .week-label {
-    font-size: 0.625rem;
+    font-size: 0.6rem;
     color: var(--text-tertiary);
     font-weight: 500;
     text-transform: uppercase;
+}
+
+/* Expanded Section */
+.habit-expanded {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border-color);
+    animation: fadeIn 0.2s ease;
+}
+
+/* Atomic Info Tags (Trigger & Reward) */
+.habit-atomic-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.atomic-tag {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    color: var(--text-primary);
+}
+
+.atomic-tag.trigger {
+    background: rgba(99, 102, 241, 0.08);
+    border: 1px solid rgba(99, 102, 241, 0.15);
+}
+
+.atomic-tag.reward {
+    background: rgba(245, 158, 11, 0.08);
+    border: 1px solid rgba(245, 158, 11, 0.15);
+}
+
+.atomic-icon {
+    font-size: 0.85rem;
+}
+
+/* Stats Row */
+.habit-stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+}
+
+.mini-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.1rem;
+    padding: 0.5rem;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+}
+
+.mini-stat-val {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--text-primary);
+}
+
+.mini-stat-label {
+    font-size: 0.65rem;
+    color: var(--text-tertiary);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+/* 30-Day Heat Map */
+.habit-heatmap {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.heatmap-title {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-tertiary);
+}
+
+.heatmap-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+}
+
+.heatmap-cell {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    transition: all 0.15s ease;
+    cursor: default;
+}
+
+.heatmap-cell.good.filled {
+    background: var(--color-success);
+    border-color: var(--color-success);
+}
+
+.heatmap-cell.bad.filled {
+    background: var(--color-danger);
+    border-color: var(--color-danger);
+}
+
+.heatmap-cell.today {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 1px;
 }
 
 /* Responsive */
@@ -350,5 +619,14 @@
 
     .habit-delete-btn {
         opacity: 1;
+    }
+
+    .habits-dashboard {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .identity-quote {
+        flex-direction: column;
+        text-align: center;
     }
 }

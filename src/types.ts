@@ -138,6 +138,8 @@ export interface Habit {
     id: string;
     name: string;
     type: 'good' | 'bad';
+    trigger?: string; // "Kahve yaptıktan SONRA" — Alışkanlık Yığınlama
+    reward?: string; // "Bunu yapınca X ödülünü alırım" — Cazip Paketleme
     createdAt: string;
 }
 
