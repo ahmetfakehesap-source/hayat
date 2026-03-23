@@ -35,7 +35,7 @@ const defaultData: AppData = {
     recentFoodEntries: [],
 };
 
-const DATA_VERSION = 3; // Increment this when default settings change
+const DATA_VERSION = 4; // Increment this when default settings change
 
 export const storage = {
 
@@ -49,22 +49,100 @@ export const storage = {
                 // version check - if missing or old, merge new defaults
                 if (!parsed.version || parsed.version < DATA_VERSION) {
                     console.log('Migrating data to version', DATA_VERSION);
-                    return {
-                        ...defaultData,
-                        ...parsed,
-                        settings: {
-                            ...defaultData.settings, // Use new defaults as base
-                            ...parsed.settings, // Keep user's theme etc if needed, but we want to force new goals
-                            // Force overwrite specific goals for the migration
+                    const updated = { ...defaultData, ...parsed };
+
+                    // Migration logic for older versions (version 3 updates)
+                    if (!parsed.version || parsed.version < 3) {
+                        updated.settings = {
+                            ...defaultData.settings,
+                            ...parsed.settings,
                             dailyCalorieGoal: defaultSettings.dailyCalorieGoal,
                             dailyProteinGoal: defaultSettings.dailyProteinGoal,
                             dailyCarbsGoal: defaultSettings.dailyCarbsGoal,
                             dailyFatGoal: defaultSettings.dailyFatGoal,
                             yearlyBookGoal: defaultSettings.yearlyBookGoal,
                             weeklyWorkoutGoal: defaultSettings.weeklyWorkoutGoal,
-                        },
-                        version: DATA_VERSION
-                    };
+                        };
+                    }
+
+                    // Migration logic for version 4 (Adding initial user inputs: Tasks, Projects, Habits, Goals)
+                    if (!parsed.version || parsed.version < 4) {
+                        const dateStr = getLocalDate();
+
+                        // 1. Yeni evin doğalgazını açtır (Görev)
+                        if (!updated.tasks.some((t: { title: string }) => t.title.toLowerCase().includes('doğalgaz'))) {
+                            updated.tasks.push({
+                                id: generateId(),
+                                title: 'Yeni evin doğalgazını açtır',
+                                completed: false,
+                                createdAt: dateStr,
+                                category: 'personal'
+                            });
+                        }
+
+                        // 2. Arbitraj Botu Sistemi (Proje)
+                        if (!updated.projects.some((p: { name: string }) => p.name.toLowerCase().includes('arbitraj'))) {
+                            updated.projects.push({
+                                id: generateId(),
+                                name: 'Arbitraj Botu Sistemi (Eldorado, G2G, Gamebus)',
+                                startDate: dateStr,
+                                endDate: '',
+                                status: 'planning',
+                                progress: 0,
+                                notes: 'Fiyatları karşılaştırarak en karlı al-sat seçeneklerini gösteren sistem.',
+                                milestones: []
+                            });
+                        }
+
+                        // 3. Uzun vadede diş fırçalama (Alışkanlık)
+                        if (!updated.habits.some((h: { name: string }) => h.name.toLowerCase().includes('diş'))) {
+                            updated.habits.push({
+                                id: generateId(),
+                                name: 'Diş Fırçalama',
+                                type: 'good',
+                                createdAt: dateStr,
+                                trigger: 'Sabah kahvaltıdan ve gece uyumadan önce'
+                            });
+                        }
+
+                        // 4. Kilo vermek / Spora Gitmek (Hedef ve Alışkanlık)
+                        if (!updated.goals.some((g: { title: string }) => g.title.toLowerCase().includes('kilo'))) {
+                            updated.goals.push({
+                                id: generateId(),
+                                title: 'Kilo Vermek',
+                                category: 'health',
+                                completed: false,
+                                notes: 'Spora düzenli giderek ve beslenmeyi düzene sokarak.'
+                            });
+                        }
+                        if (!updated.habits.some((h: { name: string }) => h.name.toLowerCase().includes('spor'))) {
+                            updated.habits.push({
+                                id: generateId(),
+                                name: 'Spora Gitmek',
+                                type: 'good',
+                                createdAt: dateStr,
+                                trigger: 'Gün içindeki işler veya hedefler bittikten sonra vs.'
+                            });
+                        }
+
+                        // 5. Robux Satışına Başla (Görev)
+                        if (!updated.tasks.some((t: { title: string }) => t.title.toLowerCase().includes('robux'))) {
+                            updated.tasks.push({
+                                id: generateId(),
+                                title: 'Robux satışına başla (Eksikler tamam, her şey hazır)',
+                                completed: false,
+                                createdAt: dateStr,
+                                category: 'work'
+                            });
+                        }
+                    }
+
+                    updated.version = DATA_VERSION;
+                    (updated as any).lastUpdated = Date.now();
+                    try {
+                        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+                    } catch (e) {}
+                    return updated;
                 }
 
                 return { ...defaultData, ...parsed };
